@@ -4,6 +4,742 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>魔靈召喚 帳號分析工具</title>
+<script>
+// ── i18n system ──
+window._LANG = localStorage.getItem('swLang') || 'en';
+window.I18N = {
+  en: {
+    title: 'Summoners War Account Analysis Tool',
+    player: 'Player', monsters: 'Monsters', runes: 'Runes', avgEff: 'Avg Eff', hiRunes: '90%+ Runes',
+    importBtn: '📥 Import New JSON', clearBtn: '🗑️ Clear Data',
+    clearTitle: 'Clear current imported monsters and runes for importing new JSON',
+    tabUnits: 'Monster Box', tabDex: 'Monster Codex', tabRunes: 'Rune Box', tabArts: 'Artifacts', tabFit: 'Auto Rune Builder', tabOverview: 'Overview',
+    searchMonster: 'Search monster name…', searchMonsterEn: 'Search Chinese/English name…',
+    allElements: 'All Elements', allStars: 'All Stars', allClasses: 'All Classes', allNaturals: 'All Naturals',
+    allSets: 'All Sets', allSlots: 'All Slots', allMain: 'All Main Stats', allGrades: 'All Grades',
+    allArtifacts: 'All Artifacts', allCategories: 'All Categories', allSubstats: 'All Sub-stats',
+    equipped: 'Equipped', storage: 'Storage (Unequipped)', equippedOn: 'Equipped on…',
+    nat5: 'Natural 5★', nat4: 'Natural 4★', nat3: 'Natural 3★', nat2: 'Natural 2★', nat1: 'Natural 1★',
+    atk: 'Attack', sup: 'Support', hp: 'HP', def: 'Defense', mat: 'Material',
+    awakened: 'Awakened', unawakened: 'Unawakened', awak2: '2nd Awakening',
+    onlyOwned: 'Only Owned', onlyUnowned: 'Only Unowned', showAll: 'All',
+    onlyRTA: 'Only Current RTA Version',
+    water: 'Water', fire: 'Fire', wind: 'Wind', light: 'Light', dark: 'Dark',
+    runeList: '📋 Rune List', runeCheck: '🔧 Rune Health Check',
+    normal: 'Normal', magic: 'Magic', rare: 'Rare', hero: 'Hero', legend: 'Legend', ancient: 'Ancient',
+    grindMerge: 'Grind: Merge All / Restore', grindMergeTitle: 'One-click merge/restore grind values of all runes in table',
+    subPrio: 'Sub-stat Priority Sort:', addSub: '+ Sub-stat', clear: 'Clear',
+    subPrioHint: '(Max 5; selecting sub-stat = must contain it, fill min value then add threshold; sorted large to small, includes prefix)',
+    effLabel: 'Eff≥', normalAncient: 'Normal + Ancient', ancientOnly: 'Ancient Only',
+    worth15: 'Worth +15: Eff after +15 ≥', enchant: 'Enchant: Eff ≥', sellable: 'Sellable: Eff <',
+    sellIncEquipped: 'Sellable includes equipped', sellIncAncient: 'Sellable includes ancient', regenerate: 'Regenerate',
+    elArtifacts: 'Elemental Artifacts', classArtifacts: 'Class Artifacts', defense: 'Defense',
+    monster: 'Monster', set4: '4-Piece Set', set2: '2-Piece Set', set2b: '+2-Piece Set', set2c: '+2-Piece Set',
+    slot2Main: 'Slot 2 Main Stat', slot4Main: 'Slot 4 Main Stat', slot6Main: 'Slot 6 Main Stat',
+    includeInt: 'Include Intangible Runes (filler)',
+    includeIntTitle: 'At most 1 Intangible among 6, can fill missing 1 piece of 4-set or 2-set; unchecked means Intangible runes won\'t participate',
+    priorityStats: 'Priority Stats:', addPriority: '+ Priority Stat',
+    extraThresholds: 'Extra Thresholds:', addCondition: '+ Add Condition',
+    mode: 'Mode:', modeSingle: 'Single/Multi Monster Build', modeCap: 'Set Capacity Analysis', modeDung: 'Dungeon Reference Teams',
+    addMonster: '+ Add Monster', calcBest: 'Calculate Best Build',
+    grindSplit: 'Grind: Split ⇄ Merge', grindSplitTitle: 'Toggle grindstone merge view',
+    clearList: '🗑️ Clear', clearListTitle: 'Clear monster list and build results, keep imported JSON',
+    undo: '↩ Undo', undoTitle: 'No steps to undo',
+    savedPlans: '— Saved Plans —', loadPlan: '📂 Load', loadPlanTitle: 'Load selected plan (overwrite current list and results)',
+    savePlan: '💾 Save Plan', savePlanTitle: 'Save current build results as a plan',
+    deletePlan: '✕ Delete', deletePlanTitle: 'Delete selected plan',
+    exportPlan: '📤 Export', exportPlanTitle: 'Export plan as JSON backup (portable to other browsers/devices)',
+    importPlan: '📥 Import', importPlanTitle: 'Import plans from exported JSON file',
+    placeholderCalc: 'Select conditions then press "Calculate Best Build"',
+    noSetReq: 'No set requirement (free build)', target: 'Target:', achievedSets: 'Achieved Sets:',
+    priorityStatsLabel: 'Priority Stats:', intFill: 'Intangible rune: placed in slot…to fill missing piece of…set',
+    intFillFree: 'Intangible rune: placed in slot…(free slot, not filling)', extraThresholdsLabel: 'Extra Thresholds:',
+    noBaseStats: '(No base stats)', spdThresh: 'Speed Threshold ≥', baseSpeed: 'Assumed Base Speed',
+    noLimit: 'No Limit', atkSpd: 'Attack Speed',
+    onlySpare: 'Only use spare runes in storage', calcMaxSets: 'Calculate Max Buildable Sets',
+    clearCap: '🗑️ Clear', clearCapTitle: 'Clear capacity analysis results, keep imported JSON',
+    placeholderCap: 'Set conditions then press "Calculate Max Buildable Sets"',
+    dungeon: 'Dungeon', showOwnedOnly: 'Only show characters I own',
+    greenOwned: 'Green=Owned', redMissing: 'Red=Missing',
+    selectDungeon: 'Select a dungeon from above', autoBuild: 'Auto Build', collapseBuild: 'Collapse Build',
+    importToList: '+ Import to Build List', importToListTitle: 'Add owned monsters from this team to the build list above',
+    worthUpgrade: '⬆️ Worth Upgrading to +15', worthGrind: '🪨 Worth Grinding', enchantSuggest: '💎 Enchant Suggestions', sellList: '🗑️ Sell List',
+    noMatch: 'No matching runes.', noGrindstones: 'No Hero/Legend quality grindstones, or account data doesn\'t include craft list.',
+    efficiency: 'Efficiency', artifact: 'Artifact', mainStat: 'Main', grade: 'Grade', substats: 'Sub-stats', owner: 'Owner',
+    chineseName: 'Chinese Name', englishName: 'English Name', element: 'Element', natural: 'Natural', class: 'Class',
+    runesLabel: 'Runes', currentSets: 'Current Sets', noRune: '(No Rune)', slot: 'Slot', prefix: 'Prefix',
+    currentSetsLabel: 'Current Sets:', runeAvgEff: 'Rune Avg Eff', clickToggle: 'Click: Toggle Base+Rune ⇄ Total',
+    artifactLabel: 'Artifact', grindAll: 'Grind: Merge All / Restore', finalIncArt: 'Final stats include artifact main stat',
+    clickGrind: 'Click: Merge grind values',
+    recommendedBuild: 'Recommended Build', runeStatTotal: 'Rune Stat Total', unknownMonster: '(Unknown Monster)',
+    runeMissing: '⚠ Rune missing', lock: '🔒 Lock', unlock: '🔓 Unlock', rebuild: '♻ Rebuild This',
+    exportImage: '🖼 Export Image', noExport: 'No build results to export', runeBuildPlan: 'Rune Build Plan',
+    unknown: '(Unknown)', finalStats: 'Final Stats', noBaseData: '(No base data)',
+    imgExportFail: 'Image export failed', imgExported: 'Image exported',
+    imgExportErr: 'Cannot export: When opened via file://, browser prohibits reading canvas with local images. Please use online version or local server.',
+    swapRune: 'Swap Rune', searchRune: 'Search: Set / Main / Sub / Owner',
+    effHighLow: 'Efficiency High→Low', spdHighLow: 'Speed High→Low', mainHighLow: 'Main Stat High→Low',
+    onlyUnused: 'Only show unused by this team',
+    runePickerNote: 'Click to swap into slot N. Runes marked "⚔ Used by this team" will be removed from the other monster (that slot becomes empty).',
+    currentConfig: '✓ Current', usedByTeam: '⚔ Used by Team #N', equippedOnLabel: 'Equipped on…',
+    noMatchRune: 'No matching runes', loadMore: '▼ Load more (N more)',
+    cancel: 'Cancel', ok: 'OK',
+    confirmTitle: 'Please Confirm', promptTitle: 'Please Enter', msgTitle: 'Message',
+    clearConfirm: 'Confirm clearing all imported monster and rune data? Browser auto-restore cache will also be cleared. No files will be deleted.',
+    clearBtnConfirm: 'Clear', unsavedClear: 'Current list has unsaved changes that cannot be recovered after clearing. Confirm clear?',
+    calcComplete: 'Build complete: N monsters total', calcCancelled: 'Calculation cancelled',
+    planSaved: 'Plan "name" saved', planDeleted: 'Plan "name" deleted', planExists: 'Plan "name" already exists. Overwrite?',
+    overwrite: 'Overwrite', planOverwrite: 'Current list has unsaved changes that will be overwritten by loading. Confirm load?',
+    selectPlan: 'Please select a plan from the dropdown first.', importJsonFirst: 'Please import JSON before loading a plan.',
+    planNotExist: 'Plan does not exist.', noPlansToExport: 'No saved plans to export.',
+    exportScope: 'Export Scope', exportThis: 'Export Only This Plan', exportAll: 'Export All',
+    importComplete: 'Import complete: N new, M overwritten', notValidJson: 'Not a valid JSON file.',
+    notPlanFile: 'This is not a plan file exported by this tool (missing type/plans).', noPlansInFile: 'Plan file contains no plans.',
+    planName: 'Plan Name:', savePlanTitle2: 'Save Plan',
+    unknownMonsters: 'The following monsters don\'t exist in the currently imported account and will show as unknown:',
+    applyCandidate: 'Applied candidate N', noBaseDataLabel: 'No base data',
+    accountHealth: 'Account Health Check', starsSWRT: 'Stars Aligned to SWRT',
+    jsonDate: 'JSON File Date', runeScore: 'Rune Score', artScore: 'Artifact Score',
+    artGrade: 'Artifact Grade', elemArt: 'Elemental Artifacts', typeArt: 'Class Artifacts',
+    runeGrade: 'Rune Grade', top10Avg: 'Top 10 Monster Avg Score', runeScoresByType: 'Rune Scores by Type',
+    monsterElement: 'Monster Element Distribution', monsterClass: '6★ Monster Classes',
+    runeSetDist: 'Rune Set Distribution (6★)', runeEffGrade: 'Rune Efficiency Grades (6★)',
+    keyMetrics: 'Key Metrics', spdMainRunes: 'SPD Main Stat Runes (Slot 2)',
+    inStorage: 'Of which in storage', ancientRunes: 'Ancient Runes', godRunes: '110%+ God-tier Runes',
+    avgEffLabel: 'Avg Efficiency', slotsFilled: 'Slots Filled',
+    teamBonusLabel: '🤝 Team Set Bonuses (cross-team, all members including self):',
+    finalStatsAfter: 'Final stats after build', baseStatsSW: 'Base stats SWARFARM 6★ max → with runes + set% applied',
+    finalFormula: 'Final = Base ×(1+attribute%+set%)+flat. Crit rate/CD/RES/ACC are additive. Does not include leader skill/tower/artifact/inscription bonuses.',
+    noBaseStatsFor: 'Cannot find base stats for…unable to calculate final values.',
+    otherCandidates: 'Other Candidate Builds', candidate: 'Candidate', apply: 'Apply',
+    diffCurrent: '(Difference from current build)', undoAfter: 'Can press ↩ Undo after applying',
+    storageLabel: 'Storage', runeGone: 'Rune missing (was: …)', noMatchFound: 'No matching runes found',
+    runeSumNote: 'Above is the sum of 6 runes\' main stat + prefix + sub-stats (excludes monster base stats and set% effects).',
+    intFillNote: '(Intangible filler → … counts as +1 piece)', setEffects: 'Set Effects:',
+    shield: 'Shield', calculate: 'Calculating', cancelBtn: '✕ Cancel',
+    calcCompat: 'Calculating (compat mode)… Monster N/M', calcProgress: 'Calculating… Monster N/M',
+    calcProgress2: 'Calculating…', pleaseSelect4: 'Please select a 4-piece set.',
+    noSetUnderCond: 'Cannot form even one set under these conditions. Try lowering speed threshold, raising base speed, or using "No Limit" slot 2 main stat.',
+    maxSets: 'Max buildable: N sets', condLabel: 'Condition: 4-piece…+ 2-piece…, final speed ≥ …(assumed base speed…)',
+    eachSetSpeed: 'Each set must provide speed ≥ …. Speed counts only runes + own set, excludes artifacts/team sets',
+    intFiller: 'Intangible (filler)', availableRunes: 'Available Runes Per Slot (Bottleneck)',
+    bottleneckNote: 'Set count is usually limited by the slot with fewest available 4-piece or 2-piece set runes.',
+    setN: 'Set N', finalSpeed: 'Final Speed', runeLabel: 'Rune',
+    cannotForm: 'Cannot form any set. Lower speed threshold, raise base speed, or use "No Limit" slot 2 main stat.',
+    imported: 'Imported', importedN: 'Imported N',
+    notFound: 'Monster not found', noneNoSet: 'None (no 4-piece set needed)', none: 'None',
+    noMatchMon: 'No matching runes', unequipped: 'Unequipped',
+    owned: 'Owned', unowned: 'Unowned',
+    strCount: '', unitCount: '', runeCount: '', artCount: '',
+    hpLabel: 'HP', atkLabel: 'ATK', defLabel: 'DEF', spdLabel: 'SPD',
+    crLabel: 'CR%', cdLabel: 'CD%', resLabel: 'RES%', accLabel: 'ACC%',
+    edpsLabel: 'Effective DPS', edefLabel: 'Effective DEF DPS', ehpLabel: 'Effective HP',
+    runeName: 'Rune', grindstonePlus: 'Grindstone+', enchantGem: 'Enchant',
+    impFailed: 'Import failed: ', readFailed: 'Failed to read file', notSWFile: 'This is not a Summoners War account export file (missing unit_list / runes)',
+    dataCleared: 'Imported data cleared, ready for new JSON import', importedStatus: 'Imported ${srcName}: ${n1} monsters, ${n2} runes, ${n3} artifacts',
+    reading: 'Reading…', autoRestored: 'Auto-restored ${date} import "${name}"',
+    restored: 'Restored: ', savedAsPlan: 'Plan "${name}" saved',
+    deletedPlan: 'Plan "${name}" deleted', exportedScope: 'Exported ${scope}',
+    cannotWrite: 'Cannot write to localStorage (file:// or private mode may be blocked by browser): ',
+    noResultsToSave: 'No build results to save. Please press "Calculate Best Build" first.',
+    noResultsToExport: 'No build results to export', imageExported: 'Image exported',
+    cannotExportFile: 'Cannot export: browser blocks canvas with local images when opened via file://. Use online version or local server.',
+    alreadyExported: 'Image exported', noMatchForRune: 'No matching runes', loadMoreRuns: '▼ Load more (${n} more)',
+    runeBuild_: 'Rune_Build_', notValid: 'Not a valid JSON file.',
+    missingRune: 'Rune missing (was: ${name})', noMatchRune2: 'No matching runes found',
+    statsSummary: 'Final Stats Summary', noBaseStats2: '(No base stats)',
+    equipRune: 'Equipped on…', storageShort: 'Storage', dungLegend: 'Green=Owned  Red=Missing',
+    grindMergeBtn: 'Grind: Merge All / Restore', grindSplitBtn: 'Grind: Split ⇄ Merge',
+    autoRestoreCache: 'Cache data',
+    slotLabel: ' slot', noRuneSlot: '(no rune)', and: 'and',
+    ancientShort: 'Ancient', allAwakenStatus: 'Awakened/Unawakened',
+    qcFootnote: '<b>Stars</b> = SWRT official 7-tier thresholds (legend/gold3-1/bronze3-1), verified screenshot-by-screenshot. <b>Score</b> = per-type value calibrated to SWRT ground truth (re-fitted on 6 accounts): per-type rune coefficients × Σmax(0,eff−98)^1.4, Top10 efficiency linearly mapped to SWRT scale, artifacts = Σmax(0,Σroll²−8)^1.5, artifact score = elemental + class. SWRT original uses server-side private formulas (not precisely reproducible); 6-account star-tier hit rate ≈85% (misses mostly adjacent tiers, often from "few elite vs many average" ranking inversion—SWRT rewards elite concentration and inherently mismatches with full-box efficiency sum).',
+    // Dungeon names
+    dungeonGB12: "Giant's Keep GB12", dungeonGB12Desc: 'Main source of runes/magic stones. Core: def break + multi-hit + ATB boost, fully auto cycle.',
+    dungeonDB12: "Dragon's Lair DB12", dungeonDB12Desc: 'Source of Swift/Focus runes. Needs def break, stun resist, stable damage.',
+    dungeonNB12: 'Necropolis NB12', dungeonNB12Desc: 'Source of Violent/Will runes. Monsters counter+rev, need def break and CC.',
+    dungeonSF10: 'Steel Fortress SF10', dungeonSF10Desc: 'Source of Immunity/Focus runes. Boss applies shield, need high-freq multi-hit.',
+    dungeonPC10: "Punisher's Crypt PC10", dungeonPC10Desc: 'Source of Revenge/Break runes. Boss high DEF, suggest fixed/% damage.',
+    dungeonElement: 'Elemental Dungeon (Fire/Wind/Water/Light/Dark Essence)', dungeonElementDesc: 'Advanced material source, low difficulty.',
+    dungeonRiftFire: 'Dimension Rift · Rift Dragon (Fire B2/B5)', dungeonRiftFireDesc: 'Dimension materials/gems/stones. Boss weak to Water, side crystals must be broken first.',
+    dungeonRiftWater: 'Dimension Rift · Rift Dragon (Water B2/B5)', dungeonRiftWaterDesc: 'Boss weak to Wind. Needs def break + continuous damage + CC resist.',
+    dungeonRiftWind: 'Dimension Rift · Rift Dragon (Wind B2/B5)', dungeonRiftWindDesc: 'Boss weak to Fire. Use fire team multi-hit to quickly break crystals.',
+    dungeonR5: 'Rift Raid R5 (Team Raid)', dungeonR5Desc: 'Need high DPS within time limit. Element advantage + def break + ATB boost + heal, divided roles.',
+    dungeonWorldBoss: 'World Boss', dungeonWorldBossDesc: 'Based on total power/element coverage, more high-star coverage of each element = higher score. Bring ATB boost + multi-hit.',
+    // Team labels
+    teamStable: 'Stable Auto Team', teamHighSpeed: 'High Speed Cycle (needs fast runes)',
+    teamGeneral: 'General Team', teamDoubleDef: 'Double Def Break Speed Clear',
+    teamMultiHit: 'Multi-Hit Team', teamFixedDmg: 'Fixed Damage Team',
+    teamWaveClear: 'General Wave Clear Team', teamWater: 'Water Team (vs Fire Dragon)',
+    teamWind: 'Wind Team (vs Water Dragon)', teamFire: 'Fire Team (vs Wind Dragon)',
+    teamMixed: 'Mixed DPS Team', teamHighScore: 'High Score Speed Clear',
+    // Role descriptions
+    roleDefBreakContCleanse: 'Def Break + Continuous Dmg + Cleanse', roleATBSpdBuff: 'ATB Boost + Speed Buff',
+    roleAoEDefBreak: 'AoE Def Break', roleFreezeDmg: 'Freeze + Damage',
+    roleMultiHitSlow: 'Multi-Hit Damage / Slow', roleATB: 'ATB Boost',
+    roleDefBreakAtkBuff: 'Def Break + ATK Buff', roleCritATB: 'Crit ATB Boost',
+    roleNuke: 'Nuke (Secondary)', roleCleanseCont: 'Cleanse + Continuous',
+    roleFreezeCC: 'Freeze CC', roleAoENuke: 'AoE Nuke',
+    roleHealATB: 'Heal + ATB Boost', roleHighDmg: 'High Damage',
+    roleImmuneHeal: 'Immunity + Heal', roleCleanseStun: 'Cleanse + Stun',
+    roleCleanseDefBreak: 'Cleanse + Def Break', roleMultiHitBrand: 'Multi-Hit + Brand',
+    roleDefBreakCont: 'Def Break + Continuous', roleIgnoreRes: 'Ignore Resist Damage',
+    roleHealLifesteal: 'Heal + Lifesteal', roleATBImmune: 'ATB Boost + Immunity',
+    roleCrystalBreak: 'Crystal Breaker / Damage', roleDefBreakATK: 'Def Break + ATK Buff',
+    roleFixedCrystal: 'Fixed Dmg / Crystal', roleCC: 'CC',
+    roleMainDPS: 'Main DPS', roleIgnoreResShort: 'Ignore Resist',
+    roleATKBuffATB: 'ATK Buff + ATB Boost', roleMultiHitShort: 'Multi-Hit',
+    // Artifact sub names (EN versions)
+    artCatDmg: 'Increase Damage', artCatRed: 'Decrease Damage', artCatBuff: 'Enhance Buff',
+    artCatHeal: 'Increase Recovery', artCatAcc: 'Increase Accuracy', artCatAdd: 'Additional Damage', artCatEtc: 'Other Effects',
+    // Stat names used in STAT_KEYS
+    statHP: 'HP', statATK: 'ATK', statDEF: 'DEF', statSPD: 'SPD',
+    statCR: 'CR%', statCD: 'CD%', statRES: 'RES%', statACC: 'ACC%',
+    statEDPS: 'Effective DPS', statEDEF: 'Effective DEF DPS', statEHP: 'Effective HP',
+    // Misc
+    grindstone: 'Grindstone', enchantGem2: 'Enchant Gem', grindstoneShort: 'Grindstone',
+    importedPlans: '(imported)', importedPlansN: '(imported N)',
+    // Canvas export
+    finalStatsCanvas: 'Final Stats', noBaseDataCanvas: '(No base data)',
+    missingCanvas: 'Missing', noneCanvas: '(None)',
+    heroShort: 'Hero', legendShort: 'Legend',
+    // Sub-stat labels in rune table
+    subEffRoll: 'Eff. Roll',
+    // Fit cards / team panel / health check
+    minVal: 'Min', remove: 'Remove', anySetFree: 'Any set (free)',
+    target: 'Target', achievedSet: 'Achieved Set', priorityStats: '🎯 Priority Stats',
+    achieved: 'achieved', intRune: '♻ Invisible Rune', intRuneSlot: 'slot',
+    intRuneFill: 'fills', intRuneMissing: 'set missing', freeSlot: 'free slot',
+    extraThresholds: '📋 Extra Thresholds', noBaseVal: 'no base stats',
+    noBaseDataForUnit: 'No base stats for this unit (mid',
+    thresholdsCannotCalc: 'percent/threshold conditions cannot be calculated, skipped',
+    unmetThresholds: 'There are', thresholdsUnmet: 'thresholds unmet while keeping sets; showing best attempt',
+    slotsFilled: 'Slots Filled', teamSetBonus: '🤝 Team Set Bonus (across team, including self)',
+    finalStatsHeader: '📊', finalStatsLabel: 'Final Stats After Build',
+    baseDataFrom: 'Base stats SWARFARM 6★', maxLevel: 'Max', withRunesSets: 'after applying runes + set bonuses',
+    finalStatsNote: 'Final = Base × (1 + Attribute% + Set%) + Flat. CR/CD/RES/ACC are additive. Excludes Leader Skill/Tower/Artifact/Inscription bonuses.',
+    noBaseDataForUnit2: 'No base stats found for', cannotCalcFinal: 'cannot calculate final stats',
+    allCats: 'All Categories', allSubs: 'All Substats', savedPlans: 'Saved Plans',
+    calculatingCompat: 'Calculating (compat mode)… Unit', unitLabel: '',
+    delete: 'Delete', notImported: 'No data imported yet.',
+    selectDungeon: 'Select dungeon', importToList: '＋ Import to List', importToListTitle: 'Add owned monsters from this team to the build list above',
+    autoBuild: 'Auto Build', collapseBuild: 'Collapse',
+    storageLabel: 'Storage', runeGone: 'Rune gone (was: …)', noMatchFound: 'No matching runes',
+    onlySpare: 'Storage only (unequipped)', capNote: 'Answers "how many sets of the given conditions can be built simultaneously from the rune pool." Each set requires: 4pc <b>Violent</b> + 2pc <b>Will</b>, one rune per slot, final speed ≥ threshold (speed counts only runes + own set bonus, not artifacts/team sets). Runes are not shared between sets.<br>Algorithm = greedy-minimal (each set barely meets the bar, no wasting fast runes) + local swap optimization to avoid "fast runes used up early reducing total sets." Base speed is assumed (same type monsters share base speed); invisible runes not included yet.',
+    fitTemplateNote: 'Add multiple monsters to build together; <b>list order = priority</b> (top picks first). Each monster picks best from "storage unequipped + this monster\'s current runes" (check to include all account runes). 4pc set can be "None"; up to 3× 2pc sets (can repeat). Empty slots pick best runes by target stats.<br>"Priority Stats" adds weighted sub-stats (1>2>3, diminishing); "Extra Thresholds" sets min(≥) or max(≤) on final stats (including base + set%). Unmet thresholds keep the chosen set but swap sub-stats within it; if still unmet, shows best attempt in red.<br>"Include Invisible Runes" allows 1 invisible rune per team to fill a missing set piece (e.g. 3 Violent + 1 Invisible = 4pc Violent).',
+    fResultsPlaceholder: 'Select conditions then press "Calculate Best Build"',
+    capResultsPlaceholder: 'Set conditions then press "Calculate Max Buildable Sets"',
+    dungNote: 'Select a dungeon to see recommended teams; each owned monster can be "auto-built" on the spot. Press "+ Import to List" to add all owned monsters from a team to the "Auto Rune Builder" list for batch calculation.',
+    dungRefPlaceholder: 'Select a dungeon from above',
+    artFilterNote: 'Sub-stat "Category → Sub-stat" filter follows the in-game UI. ID mapping verified against sw-exporter authoritative table (2026-07-21, 4 accounts × 4238 artifacts cross-validated); "?" marks are pending in-game wording confirmation, effect mapping is confirmed. Efficiency = average of each sub (value / observed max), approximate.',
+    runeBuildPlan: 'Rune Build Plan',
+    unknownMonster: '(Unknown)', runeMissing: '⚠ Rune missing ',
+    lock: '🔒 Lock', unlock: '🔓 Unlock', rebuild: '♻ Rebuild',
+    calcComplete: 'Calculation complete', calcCancelled: 'Calculation cancelled',
+    exportImage: '🖼 Export Image',
+    currentConfig: '✓ Current', usedByTeam: 'used by team #N', equipRuneLabel: 'Equipped on…',
+    swapRune: 'Swap Rune', searchRune: 'Search: set / main / sub / owner',
+    effHighLow: 'Efficiency High→Low', spdHighLow: 'Speed High→Low', mainHighLow: 'Main Stat High→Low',
+    onlyUnused: 'Only unused in this team', runePickerNote: 'Click a rune to swap into this slot.',
+    loadMoreRuns: '▼ Load more (${n} left)',
+    noMatchForRuneOld: 'No matching runes found',
+    unknown: '(Unknown)', missingCanvasOld: 'Missing', noneCanvasOld: '(None)',
+    setEffects: 'Set Effects', markCraft: 'Enchant',
+    currentSets: 'Current Sets: ', avgRuneEff: 'Avg Rune Eff',
+    statsToggleTitle: 'Click: Toggle Base+Runes ⇄ Combined',
+    artifactLabel: 'Artifact', grindMergeTitle: 'Merge all 6 rune grind values / Restore',
+    finalStatsIncludeArt: 'Final stats include artifact main stat',
+    // Health check section
+    ancient: 'Ancient ', intangible: 'Invisible',
+    noApplicableRunes: 'No applicable runes', gain: 'gain',
+    grindShort: ' grind', rerollLabel: 'Reroll',
+    worthUpgradeNote: 'Runes at +12~+14 only gain main stat from leveling; listed if potential ≥ ${eff}%.',
+    grindNote: 'Lists top 3 high-eff runes per grind type (same set, furthest from cap). Ancient caps are estimated (?).',
+    enchantNote: 'Eff ≥ ${eff}%, has flat ATK/DEF/HP junk sub, no gem yet; reroll for useful stat. "Held Gems" shows Hero/Legend gem inventory.',
+    suggestion: 'Suggestion', heldGems: 'Held Gems',
+    sellNote: 'Eff < ${eff}%${eq ? "" : ", storage only"}${anc ? "" : ", excluding ancient"}; team-used runes excluded. Double-check before selling.',
+    showingFirst: 'Showing first ${n}',
+    owned: 'Owned',
+    finalStatsNoteShort: 'Final = Base × (1 + Attr% + Set%) + Flat. Excludes leader/tower/artifact bonuses.',
+    noBaseDataForUnit3: 'No base stats found, cannot calculate final stats.',
+    // Team panel
+    critShort: 'CR', otherCandidates: 'Other Candidates',
+    critRate: 'CR', critDmg: 'CD', resist: 'RES', accuracy: 'ACC',
+    candidate: 'Candidate', cannotCalc: 'Cannot calc (rune missing or no base stats)',
+    applyCandidate: 'Apply', candidateNote: 'Parentheses = diff vs current; undo with ↩ after applying.',
+    recommendedBuild: 'Recommended Build', runeBonusTotal: 'Rune Bonus Total',
+    pngExportTitle: 'Export current team build as PNG',
+    // Undo labels
+    rebuildN: 'Rebuild #', removeRune: 'Remove rune', swapRuneLabel: 'Swap rune',
+    applyCandidateN: 'Apply candidate ',
+    // Fit extra conditions
+    minPlaceholder: 'min; empty = no limit', maxPlaceholder: 'max; empty = no limit',
+    monsterN: 'Monster ',
+    anySet: 'Any set',
+    // Capacity analysis
+    invisibleFill: 'Invisible', fillSlot: '(fill)',
+    maxSetsLabel: 'Max sets', setsUnit: '',
+    conditionLabel: 'Conditions:', freeSlot2: '(free slot)',
+    spdOnlyFromRune: 'SPD from runes only',
+    spdNoArtifacts: ' (no artifact/team bonuses)',
+    withInvisible: ' with invisible runes', perTeamMax1: ' (max 1 per team as fill)',
+    withoutInvisible: ' without invisible runes',
+    slotSupplyLabel: '| 2pc(', freeSlotLabel: '| Free slot ',
+    slotLabel: ' slot', fourPcLabel: '4pc(',
+    bottleneckTitle: 'Available Runes Per Slot (Bottleneck)',
+    bottleneckNote: 'Bottleneck is usually the slot with fewest available 4pc or 2pc runes.',
+    finalSpd: 'Final SPD', runesLabelShort: 'Runes',
+    // Plan management
+    allPlansN: 'All ${n} plans', currentPlan: 'Plan "${name}"',
+    duplicatePlansMsg: '${n} plans have same name as existing:\n',
+    duplicatePlansTitle: 'Duplicate Plans', overwriteBtn: 'Overwrite', keepBothBtn: 'Keep Both (rename)',
+    importSuffix: ' (imported)', importSuffixN: ' (imported ${n})',
+    // Worker progress
+    cancelled: 'Cancelled', workerError: 'Worker error',
+    calculating: 'Calculating…', calculatingN: 'Calculating… Unit ${i}/${n}',
+    workerFailed: 'Worker failed, falling back to sync mode: ',
+    // Rune description
+    ancientMarker: '(Anc)',
+    // QC card
+    legendTitle: 'Legend', runeSetQuick: ['Swift', 'Violent', 'Despair', 'Will', 'Revenge'],
+    runeSetTargets: ['Swift', 'Violent', 'Despair'],
+    gameIdTitle: 'Game ID',     starSwrtTitle: 'Stars = SWRT official thresholds; Score = approx calibrated to SWRT',
+    // Additional missing keys
+    candidateHasRune: 'Candidate plan has runes currently assigned to team #N. Applying will remove them (slot becomes empty). Continue?',
+    appliedCandidate: 'Applied candidate ${n}',
+    loadPlanUndo: 'Before loading "${name}"', recalcBefore: 'Before recalculation',
+    finalSpd: 'Final SPD', spdShort: 'SPD',
+    spdFromSet: 'SPD from set', spdOnlyFromRune2: 'Each set provides SPD',
+    freeSlot2: '(free slot)',
+    clickToMerge: 'Click: merge grind values',
+    intRuneFillNote: '(Invisible fill → #SET counts as +1)',
+    runeSumNote: 'Above is the sum of 6 runes\' main stat + prefix + sub-stats (excludes monster base stats and set% effects).',
+    shield: 'Shield',
+    ancientRunes: 'Ancient Runes', godRunes: '110%+ God Runes',
+    spdMainRunes: 'SPD Main (slot 2)',
+    setEffectsLabel: 'Set Effects',
+    critRate: 'CR', critDmg: 'CD',
+    resist: 'RES', accuracy: 'ACC',
+    selectSubstat: 'Select substat', atkSpd: 'Attack Speed',
+    capSlot2Main: 'Slot 2 main',
+    noneNoSet: 'None (no 4pc required)', none: 'None',
+    dexOwned: 'Owned', dexNotOwned: 'Not owned',
+    dexStatsLabel: 'Stats(6★)', dexStrength: 'Strength', dexRtaAppearance: 'RTA Usage',
+    dexStrengthNote: 'Strength based on PvE meta + swranking S37 RTA',
+    // HTML template buttons/labels
+    addMonster: '＋ Add Monster', includeAll: 'Include runes on other monsters',
+    removeMonster: 'Remove this monster',
+    calcBestBuild: 'Calculate Best Build',
+    grindSplitBtnTitle: 'Toggle grind merge/split in build results',
+    grindSplitBtn: 'Grind: Split ⇄ Merge',
+    fitClearTitle: 'Clear monster list and results, keep imported JSON',
+    clearBtn2: 'Clear',
+    noUndoTitle: 'No steps to undo',
+    undoBtn: 'Undo', undoLabel: 'Undo: ',
+    savedPlans: '— Saved Plans —',
+    loadPlanTitle: 'Load plan (overwrites current list & results)',
+    loadPlan: 'Load', savePlanTitle: 'Save current build as plan',
+    savePlan: 'Save Plan', deletePlanTitle: 'Delete selected plan',
+    deletePlan: 'Delete', exportPlanTitle: 'Export plans as JSON backup',
+    exportPlan: 'Export', importPlanTitle: 'Import plans from JSON file',
+    importPlan: 'Import',
+    // Capacity mode labels
+    cap4pc: '4pc', cap2pc: '2pc',
+    capSpdThreshold: 'SPD Threshold ≥', capBaseSpd: 'Base SPD',
+    capIntTitle: 'Max 1 invisible rune per team to fill missing set piece',
+    capIntLabel: 'Invisible (fill)', capCalcBtn: 'Calculate Max Sets',
+    capClearTitle: 'Clear capacity results, keep imported JSON',
+    // Artifact display
+    elementDot: 'Element·', archDot: 'Arch·',
+  },
+  zh: {
+    title: '魔靈召喚 帳號分析工具',
+    player: '玩家', monsters: '怪物', runes: '符文', avgEff: '平均效率', hiRunes: '90%+符文',
+    importBtn: '📥 匯入新JSON', clearBtn: '🗑️ 清除資料',
+    clearTitle: '清空目前匯入的怪物與符文，方便匯入新的 JSON',
+    tabUnits: '魔靈庫', tabDex: '怪物圖鑑', tabRunes: '符文庫', tabArts: '神器', tabFit: '符文自動配裝', tabOverview: '總覽',
+    searchMonster: '搜尋怪物名稱…', searchMonsterEn: '搜尋中英文名…',
+    allElements: '全部屬性', allStars: '全部星數', allClasses: '全部職業', allNaturals: '全部天生',
+    allSets: '全部套裝', allSlots: '全部洞位', allMain: '全部主屬', allGrades: '全部評級',
+    allArtifacts: '全部神器', allCategories: '全部類別', allSubstats: '全部副屬',
+    equipped: '已裝備', storage: '倉庫(未裝)', equippedOn: '裝在誰身上…',
+    nat5: '天生5★', nat4: '天生4★', nat3: '天生3★', nat2: '天生2★', nat1: '天生1★',
+    atk: 'Attack', sup: 'Support', hp: 'HP', def: 'Defense', mat: '素材',
+    awakened: '已覺醒', unawakened: '未覺醒', awak2: '二次覺醒',
+    onlyOwned: '只看已持有', onlyUnowned: '只看未持有', showAll: '全部',
+    onlyRTA: '只看當前版本RTA',
+    water: '水', fire: '火', wind: '風', light: '光', dark: '暗',
+    runeList: '📋 符文清單', runeCheck: '🔧 符文健檢',
+    normal: '普通', magic: '魔法', rare: '稀有', hero: '英雄', legend: '傳說', ancient: '上古',
+    grindMerge: '磨刀：全部加總／還原', grindMergeTitle: '把目前表格所有符文的磨刀值一鍵加總／還原',
+    subPrio: '副屬優先排序：', addSub: '＋ 副屬', clear: '清除',
+    subPrioHint: '（最多5個；選了副屬＝必須含該副屬，填最小值再加門檻；依序由大到小，含前綴）',
+    effLabel: '效率≥', normalAncient: '一般+上古', ancientOnly: '僅上古',
+    worth15: '值得+15：+15後效率 ≥', enchant: '附魔：效率 ≥', sellable: '可賣：效率 <',
+    sellIncEquipped: '可賣含已裝備', sellIncAncient: '可賣含上古', regenerate: '重新產生',
+    elArtifacts: '元素神器', classArtifacts: '職業神器', defense: '防禦',
+    monster: '怪物', set4: '4件套', set2: '2件套', set2b: '＋2件套', set2c: '＋2件套',
+    slot2Main: '2洞主屬', slot4Main: '4洞主屬', slot6Main: '6洞主屬',
+    includeInt: '含無形符文(補位)',
+    includeIntTitle: '六顆中最多1顆無形，可補足缺1件的4件套或2件套；未勾選則無形符文不參與配裝',
+    priorityStats: '優先屬性：', addPriority: '＋ 優先屬性',
+    extraThresholds: '額外門檻：', addCondition: '＋ 新增條件',
+    mode: '模式：', modeSingle: '單/多魔靈配裝', modeCap: '套組產能分析', modeDung: '地下城參考隊',
+    addMonster: '＋ 新增魔靈', calcBest: '計算最佳配裝',
+    grindSplit: '磨刀：分開 ⇄ 加總', grindSplitTitle: '配裝結果的副屬：磨刀值分開／加總 一鍵切換',
+    clearList: '🗑️ 清空', clearListTitle: '清空魔靈清單與配裝結果，保留已匯入的JSON',
+    undo: '↩ 復原', undoTitle: '沒有可復原的步驟',
+    savedPlans: '— 已存方案 —', loadPlan: '📂 載入', loadPlanTitle: '載入選定方案（覆蓋目前清單與結果）',
+    savePlan: '💾 存方案', savePlanTitle: '把目前配裝結果存成方案',
+    deletePlan: '✕ 刪除', deletePlanTitle: '刪除選定方案',
+    exportPlan: '📤 匯出', exportPlanTitle: '把方案匯出成 JSON 檔備份（可攜到其他瀏覽器/裝置）',
+    importPlan: '📥 匯入', importPlanTitle: '從匯出的 JSON 檔匯入方案',
+    placeholderCalc: '選好條件後按「計算最佳配裝」',
+    noSetReq: '不限套裝（自由配）', target: '目標：', achievedSets: '達成套裝：',
+    priorityStatsLabel: '優先屬性：', intFill: '無形符文：放第...洞，補足...套裝缺件',
+    intFillFree: '無形符文：放第...洞（自由洞，未補位）', extraThresholdsLabel: '額外門檻：',
+    noBaseStats: '(無基礎值)', spdThresh: '速度門檻 ≥', baseSpeed: '假設基礎速',
+    noLimit: '不限', atkSpd: '攻擊速度',
+    onlySpare: '只用倉庫閒置符文', calcMaxSets: '計算最多可配組數',
+    clearCap: '🗑️ 清空', clearCapTitle: '清空產能分析結果，保留已匯入的JSON',
+    placeholderCap: '設定條件後按「計算最多可配組數」',
+    dungeon: '地下城', showOwnedOnly: '只顯示我有的角色',
+    greenOwned: '綠=已擁有', redMissing: '紅=缺少',
+    selectDungeon: '從上方選一個地下城', autoBuild: '自動配裝', collapseBuild: '收合配裝',
+    importToList: '＋ 帶入配裝清單', importToListTitle: '把此隊已擁有角色加入上方配裝清單',
+    worthUpgrade: '⬆️ 值得升 +15', worthGrind: '🪨 值得磨刀', enchantSuggest: '💎 附魔建議', sellList: '🗑️ 可賣清單',
+    noMatch: '沒有符合的符文。', noGrindstones: '沒有英雄/傳說品質的磨刀石，或帳號檔未含魔礦清單。',
+    efficiency: '效率', artifact: '神器', mainStat: '主屬', grade: '品質', substats: '副屬', owner: '裝備者',
+    chineseName: '中文名', englishName: '英文名', element: '屬', natural: '天生', class: '職業',
+    runesLabel: '符文', currentSets: '目前套裝', noRune: '（無符文）', slot: '洞', prefix: '前綴',
+    currentSetsLabel: '目前套裝：', runeAvgEff: '符文平均效率', clickToggle: '點擊：切換 基礎+符文 ⇄ 加總',
+    artifactLabel: '神器', grindAll: '磨刀：全部加總／還原', finalIncArt: '最終體質含神器主屬',
+    clickGrind: '點擊：磨刀值加總',
+    recommendedBuild: '推薦配裝', runeStatTotal: '符文加成合計', unknownMonster: '(未知魔靈)',
+    runeMissing: '⚠符文缺', lock: '🔒鎖定', unlock: '🔓解鎖', rebuild: '♻重配這隻',
+    exportImage: '🖼 匯出圖片', noExport: '沒有配裝結果可匯出', runeBuildPlan: '符文配裝方案',
+    unknown: '(未知)', finalStats: '最終體質', noBaseData: '（無基礎資料）',
+    imgExportFail: '圖片輸出失敗', imgExported: '已匯出圖片',
+    imgExportErr: '無法匯出：以 file:// 開啟時瀏覽器禁止讀取含本地圖片的 canvas，請改用線上版或本機伺服器。',
+    swapRune: '更換符文', searchRune: '搜尋：套裝 / 主屬 / 副屬 / 裝備者',
+    effHighLow: '效率 高→低', spdHighLow: '速度 高→低', mainHighLow: '主屬數值 高→低',
+    onlyUnused: '只看未被本隊占用',
+    runePickerNote: '點一顆即替換到第 N 洞。「⚔ 本隊使用中」的符文點選後會自對方卸下（該洞變空）。',
+    currentConfig: '✓ 目前配置', usedByTeam: '⚔ 本隊 #N 使用中', equippedOnLabel: '裝於…',
+    noMatchRune: '查無符合的符文', loadMore: '▼ 載入更多（還有 N 顆）',
+    cancel: '取消', ok: '確定',
+    confirmTitle: '請確認', promptTitle: '請輸入', msgTitle: '訊息',
+    clearConfirm: '確定清除目前已匯入的怪物與符文資料？將一併清除瀏覽器內的自動還原快取，不會刪除任何檔案。',
+    clearBtnConfirm: '清除', unsavedClear: '目前清單有尚未儲存的變更，清空後將無法找回。確定清空？',
+    calcComplete: '配裝完成：共 N 隻', calcCancelled: '已取消計算',
+    planSaved: '方案「name」已儲存', planDeleted: '方案「name」已刪除', planExists: '方案「name」已存在，要覆蓋嗎？',
+    overwrite: '覆蓋', planOverwrite: '目前清單有尚未儲存的變更，載入方案將覆蓋它們。確定載入？',
+    selectPlan: '請先在下拉選單選擇方案。', importJsonFirst: '請先匯入 JSON 再載入方案。',
+    planNotExist: '方案不存在。', noPlansToExport: '目前沒有已存方案可匯出。',
+    exportScope: '匯出範圍', exportThis: '只匯出此方案', exportAll: '匯出全部',
+    importComplete: '匯入完成：新增 N 個、覆蓋 M 個方案', notValidJson: '不是有效的 JSON 檔。',
+    notPlanFile: '這不是本工具匯出的方案檔（缺 type/plans）。', noPlansInFile: '方案檔內沒有任何方案。',
+    planName: '方案名稱：', savePlanTitle2: '儲存方案',
+    unknownMonsters: '下列魔靈在目前匯入的帳號中不存在，將顯示為未知魔靈：',
+    applyCandidate: '已套用候選 N', noBaseDataLabel: '無基礎資料',
+    accountHealth: '賬號健檢', starsSWRT: '星級對齊 SWRT',
+    jsonDate: 'Json 檔案日期', runeScore: '符文評分', artScore: '魔礦評分',
+    artGrade: '魔礦評級', elemArt: '屬性魔礦', typeArt: '類型魔礦',
+    runeGrade: '符文評級', top10Avg: 'Top10魔靈均分', runeScoresByType: '各類型符文評分',
+    monsterElement: '怪物屬性分佈', monsterClass: '6★怪物職業',
+    runeSetDist: '符文套裝分佈(6★)', runeEffGrade: '符文效率分級(6★)',
+    keyMetrics: '關鍵指標', spdMainRunes: '速度主符(2洞SPD)',
+    inStorage: '其中倉庫可用', ancientRunes: '上古符文', godRunes: '110%+神符',
+    avgEffLabel: '平均效率', slotsFilled: '湊齊洞數',
+    teamBonusLabel: '🤝 全隊型套裝加成（跨隊彙總，全員含自己）：',
+    finalStatsAfter: '配裝後最終體質', baseStatsSW: '基礎值 SWARFARM 6★滿級 → 套上上方符文＋套裝%後',
+    finalFormula: '最終值＝基礎體質 ×(1＋屬性%＋套裝%)＋固定值。暴率/暴傷/抵抗/命中為加法。未計入領導技/塔/神器/銘刻等額外加成。',
+    noBaseStatsFor: '查無…的體質基礎資料…無法計算最終數值。',
+    otherCandidates: '其他候選方案', candidate: '候選', apply: '套用',
+    diffCurrent: '（與目前採用方案的差異）', undoAfter: '套用後可按 ↩ 復原',
+    storageLabel: '倉庫', runeGone: '符文已消失（原：…）', noMatchFound: '找不到符合條件的符文',
+    runeSumNote: '上方為六件符文主屬+前綴+副屬的加總(不含怪物基礎值與套裝%效果)。',
+    intFillNote: '（無形補位→…視同+1件）', setEffects: '效果套裝：',
+    shield: '護盾', calculate: '計算中', cancelBtn: '✕ 取消',
+    calcCompat: '計算中(相容模式)… 第 N/M 隻', calcProgress: '計算中… 第 N/M 隻：name',
+    calcProgress2: '計算中… 0/N', pleaseSelect4: '請選擇 4 件套。',
+    noSetUnderCond: '此條件下一組都湊不出來。可降低速度門檻、提高假設基礎速，或改用「不限」2洞主屬。',
+    maxSets: '最多可配 N 組', condLabel: '條件：4件…＋2件…、最終速度 ≥ …（假設基礎速…）',
+    eachSetSpeed: '每組符文須提供速度 ≥ …。速度只計符文＋自身套裝，未含神器/全隊型套',
+    intFiller: '無形(補位)', availableRunes: '各洞可用符文（瓶頸判斷）',
+    bottleneckNote: '組數通常卡在「某洞可用的 4 件套或 2 件套符文最少」的那個洞。',
+    setN: '組 N', finalSpeed: '最終速度', runeLabel: '符文',
+    cannotForm: '此條件下一組都湊不出來。可降低速度門檻、提高假設基礎速，或改用「不限」2洞主屬。',
+    imported: '匯入', importedN: '匯入N',
+    notFound: '查無怪物', noneNoSet: '無（不需要四件套）', none: '無',
+    noMatchMon: '查無符合的符文', unequipped: '倉庫',
+    owned: '已持有', unowned: '未持有',
+    strCount: '', unitCount: ' 隻', runeCount: ' 個', artCount: ' 個',
+    hpLabel: '體力', atkLabel: '攻擊', defLabel: '防禦', spdLabel: '速度',
+    crLabel: '暴率%', cdLabel: '暴傷%', resLabel: '抵抗%', accLabel: '命中%',
+    edpsLabel: '有效輸出EDPS', edefLabel: '有效輸出EDEF', ehpLabel: '有效血量EHP',
+    runeName: '符文', grindstonePlus: '磨刀石+', enchantGem: '附魔',
+    impFailed: '匯入失敗：', readFailed: '讀檔失敗', notSWFile: '這不是魔靈召喚帳號匯出檔（缺 unit_list / runes）',
+    dataCleared: '已清除匯入的資料，可匯入新的 JSON', importedStatus: '已匯入 ${srcName}：怪物 ${n1}、符文 ${n2}、神器 ${n3}',
+    reading: '讀取中…', autoRestored: '已自動還原 ${date} 匯入的「${name}」',
+    restored: '已復原：', savedAsPlan: '方案「${name}」已儲存',
+    deletedPlan: '方案「${name}」已刪除', exportedScope: '已匯出 ${scope}',
+    cannotWrite: '無法寫入 localStorage（file:// 開啟或隱私模式可能被瀏覽器封鎖）：',
+    noResultsToSave: '目前沒有配裝結果可存，請先按「計算最佳配裝」。',
+    noResultsToExport: '沒有配裝結果可匯出', imageExported: '已匯出圖片',
+    cannotExportFile: '無法匯出：以 file:// 開啟時瀏覽器禁止讀取含本地圖片的 canvas，請改用線上版或本機伺服器。',
+    alreadyExported: '已匯出圖片', noMatchForRune: '查無符合的符文', loadMoreRuns: '▼ 載入更多（還有 ${n} 顆）',
+    runeBuild_: '符文配裝_', notValid: '不是有效的 JSON 檔。',
+    missingRune: '符文已消失（原：${name}）', noMatchRune2: '找不到符合條件的符文',
+    statsSummary: '最終體質', noBaseStats2: '（無基礎資料）',
+    equipRune: '裝於…', storageShort: '倉庫', dungLegend: '綠=已擁有　紅=缺少',
+    grindMergeBtn: '磨刀：全部加總／還原', grindSplitBtn: '磨刀：分開 ⇄ 加總',
+    autoRestoreCache: '快取資料',
+    slotLabel: '洞', noRuneSlot: '（無符文）', and: '且',
+    ancientShort: '古', allAwakenStatus: '覺醒/未覺醒',
+    qcFootnote: '<b>星級</b>＝SWRT 官方 7 階門檻（legend／金3金2金1／銅3銅2銅1），已用真實截圖逐格驗證、精確一致。<b>分數</b>＝向 SWRT 逐類真值校正的近似值（6 帳號重擬合）：逐類符文各自係數×Σmax(0,效率−98)^1.4、Top10 效率線性轉 SWRT 尺標、魔礦＝Σmax(0,Σroll²−8)^1.5、魔礦評分＝屬性＋類型。SWRT 原分為伺服器私有公式無法精確複製；6 帳號星級命中率約 85%（未中者多為相鄰一階，且多屬「少而精 vs 多而庸」的排序反轉——SWRT 獎勵精英集中、與全庫效率加總天生對不齊，無法靠係數消除）。',
+    // Dungeon names
+    dungeonGB12: '巨人窟 GB12', dungeonGB12Desc: '符文/魔力石主要來源。核心：破防+多段+回能，可做全自動循環。',
+    dungeonDB12: '巨龍巢穴 DB12', dungeonDB12Desc: '攻速/激怒/命中符文來源。需破防、抗擊暈、穩定輸出。',
+    dungeonNB12: '死者之塔 NB12', dungeonNB12Desc: '激怒傷害/暴走/意志符文來源。怪物會反擊+回能,需破防與控場。',
+    dungeonSF10: '鋼鐵要塞 SF10', dungeonSF10Desc: '免疫/專注/引導符文。BOSS會上保護,需高頻多段。',
+    dungeonPC10: '懲罰者地穴 PC10', dungeonPC10Desc: '反擊/破壞符文。BOSS高防,建議固傷/百分比傷害。',
+    dungeonElement: '元素地下城(火/風/水/光/暗 精髓)', dungeonElementDesc: '進階素材(精髓)來源,難度低。任意屬性優勢隊即可穩過。',
+    dungeonRiftFire: '次元洞 · 異界巨龍 (火 B2/B5)', dungeonRiftFireDesc: '次元洞素材/附魔寶石/魔石。BOSS吃「水」屬性優勢,兩側水晶需優先擊破。',
+    dungeonRiftWater: '次元洞 · 異界巨龍 (水 B2/B5)', dungeonRiftWaterDesc: 'BOSS吃「風」屬性優勢。需破防+持續輸出+抗控。',
+    dungeonRiftWind: '次元洞 · 異界巨龍 (風 B2/B5)', dungeonRiftWindDesc: 'BOSS吃「火」屬性優勢。以火隊多段快速擊破水晶。',
+    dungeonR5: '異界縫隙 R5 (團隊副本)', dungeonR5Desc: '需高DPS在時限內擊破。屬性優勢+破防+回能+奶,分工輸出。',
+    dungeonWorldBoss: '世界王 Worldboss', dungeonWorldBossDesc: '看總戰力/屬性覆蓋,愈多高星覆蓋各屬愈高分。帶回能+多段。',
+    // Team labels
+    teamStable: '穩定自動隊', teamHighSpeed: '高速循環(需高速符)',
+    teamGeneral: '通用隊', teamDoubleDef: '雙防破速刷',
+    teamMultiHit: '多段隊', teamFixedDmg: '固傷隊',
+    teamWaveClear: '通用清怪隊', teamWater: '水隊 (打火龍)',
+    teamWind: '風隊 (打水龍)', teamFire: '火隊 (打風龍)',
+    teamMixed: '綜合輸出隊', teamHighScore: '高分速刷',
+    // Role descriptions
+    roleDefBreakContCleanse: '破防+持續傷害+淨化', roleATBSpdBuff: '回能+攻速buff',
+    roleAoEDefBreak: '範圍破防', roleFreezeDmg: '冰凍+輸出',
+    roleMultiHitSlow: '多段輸出/減攻速', roleATB: '回能',
+    roleDefBreakAtkBuff: '破防+攻擊buff', roleCritATB: '爆擊回能',
+    roleNuke: '斬殺(副手)', roleCleanseCont: '淨化+持續',
+    roleFreezeCC: '冰凍控場', roleAoENuke: '範圍斬殺',
+    roleHealATB: '奶+回能', roleHighDmg: '高輸出',
+    roleImmuneHeal: '免疫+奶', roleCleanseStun: '淨化+暈',
+    roleCleanseDefBreak: '淨化+破防', roleMultiHitBrand: '多段+灼燒',
+    roleDefBreakCont: '破防+持續', roleIgnoreRes: '無視抗性輸出',
+    roleHealLifesteal: '奶+吸血', roleATBImmune: '回能+免疫',
+    roleCrystalBreak: '水晶擊破/輸出', roleDefBreakATK: '破防+攻buff',
+    roleFixedCrystal: '固傷/水晶', roleCC: '控場',
+    roleMainDPS: '主力輸出', roleIgnoreResShort: '無視抗性',
+    roleATKBuffATB: '攻buff+回能', roleMultiHitShort: '多段',
+    // Artifact sub names
+    artCatDmg: '增加傷害量', artCatRed: '減少傷害量', artCatBuff: '增強強化效果',
+    artCatHeal: '增加恢復量', artCatAcc: '增加效果命中', artCatAdd: '追加傷害效果', artCatEtc: '其他效果',
+    // Stat names
+    statHP: '體力', statATK: '攻擊', statDEF: '防禦', statSPD: '速度',
+    statCR: '暴率%', statCD: '暴傷%', statRES: '抵抗%', statACC: '命中%',
+    statEDPS: '有效輸出EDPS', statEDEF: '有效輸出EDEF', statEHP: '有效血量EHP',
+    // Misc
+    grindstone: '磨刀石', enchantGem2: '附魔寶石', grindstoneShort: '磨刀石',
+    importedPlans: '(匯入)', importedPlansN: '(匯入N)',
+    // Canvas export
+    finalStatsCanvas: '最終體質', noBaseDataCanvas: '（無基礎資料）',
+    missingCanvas: '已消失', noneCanvas: '（無）',
+    heroShort: '英雄', legendShort: '傳說',
+    subEffRoll: '有效roll',
+    // Fit cards / team panel / health check
+    minVal: '最小值', remove: '移除', anySetFree: '不限套裝（自由配）',
+    target: '目標', achievedSet: '達成套裝', priorityStats: '🎯 優先屬性',
+    achieved: '配出', intRune: '♻ 無形符文', intRuneSlot: '放第',
+    intRuneFill: '補足', intRuneMissing: '套裝缺件', freeSlot: '自由洞，未補位',
+    extraThresholds: '📋 額外門檻', noBaseVal: '無基礎值',
+    noBaseDataForUnit: '查無此怪物基礎體質（mid',
+    thresholdsCannotCalc: '優先屬性％類／門檻條件無法計算，已略過',
+    unmetThresholds: '有', thresholdsUnmet: '項門檻在保留套裝的前提下配不出來，以下為最佳嘗試',
+    slotsFilled: '湊齊洞數', teamSetBonus: '🤝 全隊型套裝加成（跨隊彙總，全員含自己）',
+    finalStatsHeader: '📊', finalStatsLabel: '配裝後最終體質',
+    baseDataFrom: '基礎值 SWARFARM 6★', maxLevel: '滿級', withRunesSets: '套上上方符文＋套裝%後',
+    finalStatsNote: '最終值＝基礎體質 ×(1＋屬性%＋套裝%)＋固定值。暴率/暴傷/抵抗/命中為加法。未計入領導技/塔/神器/銘刻等額外加成。',
+    noBaseDataForUnit2: '查無', cannotCalcFinal: '無法計算最終數值',
+    allCats: '全部類別', allSubs: '全部副屬', savedPlans: '已存方案',
+    calculatingCompat: '計算中(相容模式)… 第', unitLabel: '隻',
+    delete: '刪除', notImported: '尚未匯入資料。',
+    selectDungeon: '選擇地下城', importToList: '＋ 帶入配裝清單', importToListTitle: '把此隊已擁有角色加入上方配裝清單',
+    autoBuild: '自動配裝', collapseBuild: '收合配裝',
+    storageLabel: '倉庫', runeGone: '符文已消失（原：…）', noMatchFound: '找不到符合條件的符文',
+    onlySpare: '只用倉庫閒置符文', capNote: '回答「用整個符文池最多能同時湊出幾組符合條件的套裝」。每組須：4件<b>暴走</b>＋2件<b>意志</b>、每洞一顆、最終速度≥門檻（速度只計符文＋自身套裝加成，不含神器/全隊型套）。組間符文不共用。<br>演算法＝貪婪最省（每組剛好踩線、不浪費快符文）＋局部交換優化，盡量避免「前面把快符文用光導致總組數變少」。基礎速為假設值（同型怪基礎速相同才準）；暫不含無形符文。',
+    fitTemplateNote: '可加入多隻魔靈一起配裝；<b>清單由上到下＝優先序</b>，排前面的先挑最佳解，用掉的符文後面的魔靈不會再用（同一顆符文不重複套用）。<br>每隻各自設定：引擎從「倉庫未裝 ＋ 這隻目前的符文」中挑選（勾選可納入全帳號符文）。四件套可選「無」；二件套最多三組（可重複，例如元氣×2＝四洞元氣）；未被套裝佔用的洞為自由洞，依目標挑最佳符文。<br>「優先屬性」可依序加入多個屬性（1.&gt;2.&gt;3. 加權遞減），滿足套裝後優先挑這些屬性高的符文；「額外門檻」可設下限(≥)與上限(≤)，只填一邊即可、留空＝該邊不限制；以最終體質（含基礎值＋套裝%）判斷，未達標時保留你選定的套裝、僅在同套內換副屬修補，仍達不到會顯示最佳嘗試並標紅。<br>勾「含無形符文」時，六顆最多 1 顆無形，可補足缺 1 件的套裝（例：3 顆暴走＋1 顆無形＝視同暴走 4 件套）；未勾選則無形符文完全不參與配裝。',
+    fResultsPlaceholder: '選好條件後按「計算最佳配裝」',
+    capResultsPlaceholder: '設定條件後按「計算最多可配組數」',
+    dungNote: '選一個地下城查看推薦隊伍；每個已擁有角色可就地「自動配裝」。按「＋ 帶入配裝清單」把整隊已擁有角色一次加入「單/多魔靈配裝」清單再一起計算。',
+    dungRefPlaceholder: '從上方選一個地下城',
+    artFilterNote: '副屬「類別→副屬性」比照遊戲內篩選介面。ID 對照已依 sw-exporter 權威表全數校正（2026-07-21，4 帳號 4238 顆神器交叉驗證）；標「?」者僅繁中措辭待遊戲內核對、效果對應已確定。效率＝各副屬(值/觀測滿值)平均，為近似值。',
+    runeBuildPlan: '符文配裝方案',
+    unknownMonster: '(未知魔靈)', runeMissing: '⚠符文缺',
+    lock: '🔒鎖定', unlock: '🔓解鎖', rebuild: '♻重配這隻',
+    calcComplete: '配裝完成', calcCancelled: '配裝已取消',
+    exportImage: '🖼 匯出圖片',
+    currentConfig: '✓ 目前配置', usedByTeam: '本隊 #N 使用中', equipRuneLabel: '裝在誰身上…',
+    swapRune: '更換符文', searchRune: '搜尋：套裝 / 主屬 / 副屬 / 裝備者',
+    effHighLow: '效率 高→低', spdHighLow: '速度 高→低', mainHighLow: '主屬數值 高→低',
+    onlyUnused: '只看未被本隊占用', runePickerNote: '點一顆即替換到該洞。',
+    loadMoreRuns: '▼ 載入更多（還有 ${n} 顆）',
+    noMatchForRuneOld: '查無符合的符文',
+    unknown: '(未知)', missingCanvasOld: '已消失', noneCanvasOld: '（無）',
+    setEffects: '效果套裝', markCraft: '磨刀石',
+    currentSets: '目前套裝：', avgRuneEff: '符文平均效率',
+    statsToggleTitle: '點擊：切換 基礎+符文 ⇄ 加總',
+    artifactLabel: '神器', grindMergeTitle: '一次把六顆符文的磨刀值加總／還原',
+    finalStatsIncludeArt: '最終體質含神器主屬',
+    // Health check section
+    ancient: '上古', intangible: '無形',
+    noApplicableRunes: '無適用符文', gain: '賺',
+    grindShort: '磨', rerollLabel: '洗',
+    worthUpgradeNote: '+12～+14 的符文升滿只補主屬值、不吃隨機 roll，列出升滿後效率 ≥ ${eff}% 者。',
+    grindNote: '每種磨刀石列出「同套裝、該副屬離此品質磨刀上限最遠」的前 3 顆高效率符文；上古上限值為推定(標?)。',
+    enchantNote: '效率 ≥ ${eff}%、含固定攻/防/體廢副屬、尚未鑲寶石者；建議把該行洗成有用屬性。「持有寶石」列同套裝英雄/傳說寶石庫存。',
+    suggestion: '建議', heldGems: '持有寶石',
+    sellNote: '效率 < ${eff}%${eq ? "" : "、僅倉庫未裝"}${anc ? "" : "、不含上古"}；已排除目前配裝隊伍占用的符文。賣前請自行再確認。',
+    showingFirst: '顯示前 ${n}',
+    owned: '擁有',
+    finalStatsNoteShort: '最終值＝基礎體質×(1＋屬性%＋套裝%)＋固定值，未計領導技/塔/神器/銘刻。',
+    noBaseDataForUnit3: '查無此魔靈體質基礎資料，無法算最終數值。',
+    // Team panel
+    critShort: '暴', otherCandidates: '其他候選方案',
+    critRate: '暴率', critDmg: '暴傷', resist: '抵抗', accuracy: '命中',
+    candidate: '候選', cannotCalc: '無法計算（符文已消失或缺基礎值）',
+    applyCandidate: '套用', candidateNote: '括號＝與目前採用方案的差異；套用後可按 ↩ 復原。',
+    recommendedBuild: '推薦配裝', runeBonusTotal: '符文加成合計',
+    pngExportTitle: '把目前隊伍配裝輸出成 PNG 圖片',
+    // Undo labels
+    rebuildN: '重配 #', removeRune: '刪除符文', swapRuneLabel: '更換符文',
+    applyCandidateN: '套用候選 ',
+    // Fit extra conditions
+    minPlaceholder: '下限；留空＝不限制', maxPlaceholder: '上限；留空＝不限制',
+    monsterN: '魔靈 ',
+    anySet: '不限',
+    // Capacity analysis
+    invisibleFill: '無形', fillSlot: '（補位）',
+    maxSetsLabel: '最多可配', setsUnit: '組',
+    conditionLabel: '條件：', freeSlot2: '（自由洞）',
+    spdOnlyFromRune: '每組符文須提供速度',
+    spdNoArtifacts: '速度只計符文＋自身套裝，未含神器/全隊型套；',
+    withInvisible: '可用無形符文', perTeamMax1: '顆（每組至多1顆補位）',
+    withoutInvisible: '未含無形符文',
+    slotSupplyLabel: '｜2件套(', freeSlotLabel: '｜自由洞 ',
+    slotLabel: '洞', fourPcLabel: '4件套(',
+    bottleneckTitle: '各洞可用符文（瓶頸判斷）',
+    bottleneckNote: '組數通常卡在「某洞可用的 4 件套或 2 件套符文最少」的那個洞。',
+    finalSpd: '最終速度', runesLabelShort: '符文',
+    // Plan management
+    allPlansN: '全部 ${n} 個方案', currentPlan: '方案「${name}」',
+    duplicatePlansMsg: '下列 ${n} 個方案與現有方案同名：\n',
+    duplicatePlansTitle: '同名方案', overwriteBtn: '覆蓋', keepBothBtn: '保留兩者（改名）',
+    importSuffix: ' (匯入)', importSuffixN: ' (匯入${n})',
+    // Worker progress
+    cancelled: '已取消', workerError: 'Worker 執行錯誤',
+    calculating: '計算中…', calculatingN: '計算中… 第 ${i}/${n} 隻',
+    workerFailed: 'Worker 計算失敗，退回同步模式：',
+    // Rune description
+    ancientMarker: '(古)',
+    // QC card
+    legendTitle: '傳說', runeSetQuick: ['迅速', '暴走', '絕望', '意志', '反擊'],
+    runeSetTargets: ['迅速', '暴走', '絕望'],
+    gameIdTitle: '遊戲ID',     starSwrtTitle: '星級＝SWRT 官方門檻（精確）；分數＝向 SWRT 逐類校正的近似值',
+    // Additional missing keys
+    candidateHasRune: '候選方案有符文目前配給本隊 #N，套用後將自對方卸下（該洞變空）。繼續？',
+    appliedCandidate: '已套用候選 ${n}',
+    loadPlanUndo: '載入「${name}」前', recalcBefore: '重新計算前',
+    finalSpd: '最終速度', spdShort: '速',
+    spdFromSet: '速 套裝', spdOnlyFromRune2: '每組符文須提供速度',
+    freeSlot2: '（自由洞）',
+    clickToMerge: '點擊：磨刀值加總',
+    intRuneFillNote: '（無形補位→#SET 視同+1件）',
+    runeSumNote: '上方為六件符文主屬+前綴+副屬的加總(不含怪物基礎值與套裝%效果)。',
+    shield: '護盾',
+    ancientRunes: '上古符文', godRunes: '110%+神符',
+    spdMainRunes: '速度主符(2洞SPD)',
+    setEffectsLabel: '效果套裝',
+    critRate: '暴率', critDmg: '暴傷',
+    resist: '抵抗', accuracy: '命中',
+    selectSubstat: '選副屬', atkSpd: '攻擊速度',
+    capSlot2Main: '2洞主屬',
+    noneNoSet: '無（不需要四件套）', none: '無',
+    dexOwned: '已持有', dexNotOwned: '未持有',
+    dexStatsLabel: '體質(6★)', dexStrength: '強度', dexRtaAppearance: 'RTA出場',
+    dexStrengthNote: '強度依 PvE meta + swranking S37 RTA',
+    // HTML template buttons/labels
+    addMonster: '＋ 新增魔靈', includeAll: '含裝在別隻的符文',
+    removeMonster: '移除此魔靈',
+    calcBestBuild: '計算最佳配裝',
+    grindSplitBtnTitle: '配裝結果的副屬：磨刀值分開／加總 一鍵切換',
+    grindSplitBtn: '磨刀：分開 ⇄ 加總',
+    fitClearTitle: '清空魔靈清單與配裝結果，保留已匯入的JSON',
+    clearBtn2: '清空',
+    noUndoTitle: '沒有可復原的步驟',
+    undoBtn: '復原', undoLabel: '復原：',
+    savedPlans: '— 已存方案 —',
+    loadPlanTitle: '載入選定方案（覆蓋目前清單與結果）',
+    loadPlan: '載入', savePlanTitle: '把目前配裝結果存成方案',
+    savePlan: '存方案', deletePlanTitle: '刪除選定方案',
+    deletePlan: '刪除', exportPlanTitle: '把方案匯出成 JSON 檔備份（可攜到其他瀏覽器/裝置）',
+    exportPlan: '匯出', importPlanTitle: '從匯出的 JSON 檔匯入方案',
+    importPlan: '匯入',
+    // Capacity mode labels
+    cap4pc: '4件套', cap2pc: '2件套',
+    capSpdThreshold: '速度門檻 ≥', capBaseSpd: '假設基礎速',
+    capIntTitle: '每組最多1顆無形符文，可補足缺1件的套裝(例:3暴走+1無形=視同暴走4件套)',
+    capIntLabel: '含無形符文(補位)', capCalcBtn: '計算最多可配組數',
+    capClearTitle: '清空產能分析結果，保留已匯入的JSON',
+    // Artifact display
+    elementDot: '元素·', archDot: '職業·',
+  }
+};
+window.t = function(key, params) {
+  const lang = window._LANG || 'en';
+  let val = (I18N[lang] && I18N[lang][key]) || (I18N.en && I18N.en[key]) || key;
+  if (params) Object.keys(params).forEach(k => { val = val.replace(new RegExp('\\$\\{' + k + '\\}', 'g'), params[k]); });
+  return val;
+};
+window.setLang = function(lang) {
+  window._LANG = lang;
+  try { localStorage.setItem('swLang', lang); } catch(e) {}
+  document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : 'en';
+  document.title = t('title');
+  if (typeof renderAll === 'function') renderAll();
+  updateLangBtn();
+};
+window.updateLangBtn = function() {
+  const btn = document.getElementById('langBtn');
+  if (btn) btn.textContent = window._LANG === 'en' ? '繁中' : 'EN';
+};
+window.applyI18N = function() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = t(key);
+    if (val !== key) { if (val.includes('<')) el.innerHTML = val; else el.textContent = val; }
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    const val = t(key);
+    if (val !== key) el.placeholder = val;
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    const val = t(key);
+    if (val !== key) el.title = val;
+  });
+  document.querySelectorAll('[data-i18n-slot]').forEach(el => {
+    const n = el.getAttribute('data-i18n-slot');
+    el.textContent = n + t('slotLabel');
+  });
+  document.title = t('title');
+  const hTitle = document.getElementById('hTitle');
+  if (hTitle) hTitle.textContent = '⚔️ ' + t('title');
+  updateLangBtn();
+};
+</script>
 <style>
 :root{--bg:#0f1220;--panel:#1a1f35;--panel2:#232a45;--line:#2f3860;--txt:#e6e9f5;--dim:#9aa3c7;--acc:#6ea8ff;--good:#37d67a;--warn:#ffb020;--bad:#ff5470;
 --water:#3b9dff;--fire:#ff6b4a;--wind:#ffd23f;--light:#f2f2f2;--dark:#b06bff;}
@@ -240,33 +976,34 @@ img.uico.big{width:44px;height:44px;border-radius:8px}
 </head>
 <body>
 <header>
-  <h1>⚔️ 魔靈召喚 帳號分析工具</h1>
-  <span class="stat">玩家 <b id="hPlayer"></b></span>
-  <span class="stat">怪物 <b id="hUnits">0</b></span>
-  <span class="stat">符文 <b id="hRunes">0</b></span>
-  <span class="stat">平均效率 <b id="hEff">0%</b></span>
-  <span class="stat">90%+符文 <b id="hHi">0</b></span>
-  <button class="btn" id="impBtn" style="margin-left:auto">📥 匯入新JSON</button>
-  <button class="btn" id="clrBtn" title="清空目前匯入的怪物與符文，方便匯入新的 JSON">🗑️ 清除資料</button>
+  <h1 id="hTitle">⚔️ 魔靈召喚 帳號分析工具</h1>
+  <span class="stat"><span data-i18n="player">玩家</span> <b id="hPlayer"></b></span>
+  <span class="stat"><span data-i18n="monsters">怪物</span> <b id="hUnits">0</b></span>
+  <span class="stat"><span data-i18n="runes">符文</span> <b id="hRunes">0</b></span>
+  <span class="stat"><span data-i18n="avgEff">平均效率</span> <b id="hEff">0%</b></span>
+  <span class="stat"><span data-i18n="hiRunes">90%+符文</span> <b id="hHi">0</b></span>
+  <button class="btn" id="langBtn" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);margin-left:auto" title="Switch Language" onclick="setLang(_LANG==='en'?'zh':'en')">繁中</button>
+  <button class="btn" id="impBtn"><span data-i18n="importBtn">📥 匯入新JSON</span></button>
+  <button class="btn" id="clrBtn" data-i18n-title="clearTitle" title="">🗑️ <span data-i18n="clearBtn">清除資料</span></button>
   <input type="file" id="impFile" accept=".json,application/json" style="display:none">
   <span class="stat" id="impStatus"></span>
 </header>
 <nav>
-  <button data-tab="units" class="active">魔靈庫</button>
-  <button data-tab="dex">怪物圖鑑</button>
-  <button data-tab="runes">符文庫</button>
-  <button data-tab="arts">神器</button>
-  <button data-tab="fit">符文自動配裝</button>
-  <button data-tab="overview">總覽</button>
+  <button data-tab="units" class="active" data-i18n="tabUnits">魔靈庫</button>
+  <button data-tab="dex" data-i18n="tabDex">怪物圖鑑</button>
+  <button data-tab="runes" data-i18n="tabRunes">符文庫</button>
+  <button data-tab="arts" data-i18n="tabArts">神器</button>
+  <button data-tab="fit" data-i18n="tabFit">符文自動配裝</button>
+  <button data-tab="overview" data-i18n="tabOverview">總覽</button>
 </nav>
 <main>
   <section id="units" class="tab active">
     <div class="controls">
-      <input id="uSearch" placeholder="搜尋怪物名稱…" style="min-width:200px">
-      <select id="uAttr"><option value="">全部屬性</option><option>水</option><option>火</option><option>風</option><option>光</option><option>暗</option></select>
-      <select id="uStar"><option value="">全部星數</option><option value="6">6★</option><option value="5">5★</option><option value="4">4★</option><option value="3">≤3★</option></select>
-      <select id="uArch"><option value="">全部職業</option><option>Attack</option><option>Support</option><option>HP</option><option>Defense</option></select>
-      <select id="uNat"><option value="">全部天生</option><option value="5">天生5★</option><option value="4">天生4★</option><option value="3">天生3★</option><option value="2">天生2★</option></select>
+      <input id="uSearch" data-i18n-placeholder="searchMonster" placeholder="搜尋怪物名稱…" style="min-width:200px">
+      <select id="uAttr"><option value="" data-i18n="allElements">全部屬性</option><option data-i18n="water">水</option><option data-i18n="fire">火</option><option data-i18n="wind">風</option><option data-i18n="light">光</option><option data-i18n="dark">暗</option></select>
+      <select id="uStar"><option value="" data-i18n="allStars">全部星數</option><option value="6">6★</option><option value="5">5★</option><option value="4">4★</option><option value="3">≤3★</option></select>
+      <select id="uArch"><option value="" data-i18n="allClasses">全部職業</option><option>Attack</option><option>Support</option><option>HP</option><option>Defense</option></select>
+      <select id="uNat"><option value="" data-i18n="allNaturals">全部天生</option><option value="5" data-i18n="nat5">天生5★</option><option value="4" data-i18n="nat4">天生4★</option><option value="3" data-i18n="nat3">天生3★</option><option value="2" data-i18n="nat2">天生2★</option></select>
       <span class="muted" id="uCount"></span>
     </div>
     <div class="tablewrap"><table id="uTable"></table></div>
@@ -274,14 +1011,14 @@ img.uico.big{width:44px;height:44px;border-radius:8px}
 
   <section id="dex" class="tab">
     <div class="controls">
-      <input id="xSearch" placeholder="搜尋中英文名…" style="min-width:200px">
-      <select id="xAttr"><option value="">全部屬性</option><option>水</option><option>火</option><option>風</option><option>光</option><option>暗</option></select>
-      <select id="xArch"><option value="">全部職業</option><option value="Attack">攻擊</option><option value="Support">支援</option><option value="HP">體力</option><option value="Defense">防禦</option><option value="Material">素材</option></select>
-      <select id="xNat"><option value="">全部天生</option><option value="5">天生5★</option><option value="4">天生4★</option><option value="3">天生3★</option><option value="2">天生2★</option><option value="1">天生1★</option></select>
-      <select id="xAwk"><option value="">覺醒/未覺醒</option><option value="1">已覺醒</option><option value="0">未覺醒</option><option value="2">二次覺醒</option></select>
-      <select id="xTier"><option value="">全部強度</option><option>S</option><option>A</option><option>B</option><option>C</option><option>D</option></select>
-      <select id="xOwn"><option value="">全部</option><option value="1">只看已持有</option><option value="0">只看未持有</option></select>
-      <label><input type="checkbox" id="xRta"> 只看當前版本RTA</label>
+      <input id="xSearch" data-i18n-placeholder="searchMonsterEn" placeholder="搜尋中英文名…" style="min-width:200px">
+      <select id="xAttr"><option value="" data-i18n="allElements">全部屬性</option><option data-i18n="water">水</option><option data-i18n="fire">火</option><option data-i18n="wind">風</option><option data-i18n="light">光</option><option data-i18n="dark">暗</option></select>
+      <select id="xArch"><option value="" data-i18n="allClasses">全部職業</option><option value="Attack" data-i18n="atk">攻擊</option><option value="Support" data-i18n="sup">支援</option><option value="HP" data-i18n="hp">體力</option><option value="Defense" data-i18n="defense">防禦</option><option value="Material" data-i18n="mat">素材</option></select>
+      <select id="xNat"><option value="" data-i18n="allNaturals">全部天生</option><option value="5" data-i18n="nat5">天生5★</option><option value="4" data-i18n="nat4">天生4★</option><option value="3" data-i18n="nat3">天生3★</option><option value="2" data-i18n="nat2">天生2★</option><option value="1" data-i18n="nat1">天生1★</option></select>
+      <select id="xAwk"><option value="" data-i18n="allAwakenStatus">覺醒/未覺醒</option><option value="1" data-i18n="awakened">已覺醒</option><option value="0" data-i18n="unawakened">未覺醒</option><option value="2" data-i18n="awak2">二次覺醒</option></select>
+      <select id="xTier"><option value="" data-i18n="allGrades">全部強度</option><option>S</option><option>A</option><option>B</option><option>C</option><option>D</option></select>
+      <select id="xOwn"><option value="" data-i18n="showAll">全部</option><option value="1" data-i18n="onlyOwned">只看已持有</option><option value="0" data-i18n="onlyUnowned">只看未持有</option></select>
+      <label><input type="checkbox" id="xRta"> <span data-i18n="onlyRTA">只看當前版本RTA</span></label>
       <span class="muted" id="xCount"></span>
     </div>
     <div id="dexGrid" class="dexgrid"></div>
@@ -289,39 +1026,39 @@ img.uico.big{width:44px;height:44px;border-radius:8px}
 
   <section id="runes" class="tab">
     <div class="controls" style="margin-bottom:4px">
-      <button class="btn" id="rViewListBtn" type="button">📋 符文清單</button>
-      <button class="btn2" id="rViewCheckBtn" type="button">🔧 符文健檢</button>
+      <button class="btn" id="rViewListBtn" type="button" data-i18n="runeList">📋 符文清單</button>
+      <button class="btn2" id="rViewCheckBtn" type="button" data-i18n="runeCheck">🔧 符文健檢</button>
     </div>
     <div id="rListView">
     <div class="controls">
-      <select id="rSet"><option value="">全部套裝</option></select>
-      <select id="rSlot"><option value="">全部洞位</option><option value="1">1洞</option><option value="2">2洞</option><option value="3">3洞</option><option value="4">4洞</option><option value="5">5洞</option><option value="6">6洞</option></select>
-      <select id="rMain"><option value="">全部主屬</option></select>
-      <select id="rGrade"><option value="">全部評級</option><option>SSS</option><option>SS</option><option>S</option><option>A</option><option>B</option><option>C</option></select>
-      <select id="rEq"><option value="">全部</option><option value="0">倉庫(未裝)</option><option value="1">已裝備</option></select>
-      <select id="rAnc"><option value="">一般+上古</option><option value="1">僅上古</option></select>
-      <label>效率≥<input id="rEff" type="number" value="0" min="0" max="130" style="width:64px"></label>
-      <input id="rOwner" placeholder="裝在誰身上…" style="width:150px">
-      <button class="btn2" id="rMergeAll" type="button" title="把目前表格所有符文的磨刀值一鍵加總／還原">磨刀：全部加總／還原</button>
+      <select id="rSet"><option value="" data-i18n="allSets">全部套裝</option></select>
+      <select id="rSlot"><option value="" data-i18n="allSlots">全部洞位</option><option value="1" data-i18n-slot="1">1洞</option><option value="2" data-i18n-slot="2">2洞</option><option value="3" data-i18n-slot="3">3洞</option><option value="4" data-i18n-slot="4">4洞</option><option value="5" data-i18n-slot="5">5洞</option><option value="6" data-i18n-slot="6">6洞</option></select>
+      <select id="rMain"><option value="" data-i18n="allMain">全部主屬</option></select>
+      <select id="rGrade"><option value="" data-i18n="allGrades">全部評級</option><option>SSS</option><option>SS</option><option>S</option><option>A</option><option>B</option><option>C</option></select>
+      <select id="rEq"><option value="" data-i18n="showAll">全部</option><option value="0" data-i18n="storage">倉庫(未裝)</option><option value="1" data-i18n="equipped">已裝備</option></select>
+      <select id="rAnc"><option value="" data-i18n="normalAncient">一般+上古</option><option value="1" data-i18n="ancientOnly">僅上古</option></select>
+      <label><span data-i18n="effLabel">效率≥</span><input id="rEff" type="number" value="0" min="0" max="130" style="width:64px"></label>
+      <input id="rOwner" data-i18n-placeholder="equippedOn" placeholder="裝在誰身上…" style="width:150px">
+      <button class="btn2" id="rMergeAll" type="button" data-i18n-title="grindMergeTitle" title="把目前表格所有符文的磨刀值一鍵加總／還原" data-i18n="grindMerge">磨刀：全部加總／還原</button>
       <span class="muted" id="rCount"></span>
     </div>
     <div class="controls" id="rSubPrio" style="margin-top:-4px">
-      <span class="muted">副屬優先排序：</span>
+      <span class="muted" data-i18n="subPrio">副屬優先排序：</span>
       <span id="rPrioRows"></span>
-      <button class="btn2" id="rPrioAdd" type="button">＋ 副屬</button>
-      <button class="btn2" id="rPrioClear" type="button">清除</button>
-      <span class="muted" id="rPrioHint">（最多5個；選了副屬＝必須含該副屬，填最小值再加門檻；依序由大到小，含前綴）</span>
+      <button class="btn2" id="rPrioAdd" type="button" data-i18n="addSub">＋ 副屬</button>
+      <button class="btn2" id="rPrioClear" type="button" data-i18n="clear">清除</button>
+      <span class="muted" id="rPrioHint" data-i18n="subPrioHint">（最多5個；選了副屬＝必須含該副屬，填最小值再加門檻；依序由大到小，含前綴）</span>
     </div>
     <div class="tablewrap"><table id="rTable"></table></div>
     </div>
     <div id="rCheckView" style="display:none">
       <div class="controls">
-        <label>值得+15：+15後效率 ≥ <input id="ckUpEff" type="number" value="85" min="0" max="130" style="width:64px"></label>
-        <label>附魔：效率 ≥ <input id="ckEnEff" type="number" value="75" min="0" max="130" style="width:64px"></label>
-        <label>可賣：效率 &lt; <input id="ckSellEff" type="number" value="70" min="0" max="130" style="width:64px"></label>
-        <label><input type="checkbox" id="ckSellEq"> 可賣含已裝備</label>
-        <label><input type="checkbox" id="ckSellAnc"> 可賣含上古</label>
-        <button class="btn2" id="ckRun" type="button">重新產生</button>
+        <label><span data-i18n="worth15">值得+15：+15後效率 ≥</span> <input id="ckUpEff" type="number" value="85" min="0" max="130" style="width:64px"></label>
+        <label><span data-i18n="enchant">附魔：效率 ≥</span> <input id="ckEnEff" type="number" value="75" min="0" max="130" style="width:64px"></label>
+        <label><span data-i18n="sellable">可賣：效率 &lt;</span> <input id="ckSellEff" type="number" value="70" min="0" max="130" style="width:64px"></label>
+        <label><input type="checkbox" id="ckSellEq"> <span data-i18n="sellIncEquipped">可賣含已裝備</span></label>
+        <label><input type="checkbox" id="ckSellAnc"> <span data-i18n="sellIncAncient">可賣含上古</span></label>
+        <button class="btn2" id="ckRun" type="button" data-i18n="regenerate">重新產生</button>
       </div>
       <div id="ckBody"></div>
     </div>
@@ -329,18 +1066,18 @@ img.uico.big{width:44px;height:44px;border-radius:8px}
 
   <section id="arts" class="tab">
     <div class="controls">
-      <select id="aType"><option value="">全部神器</option><option value="1">元素神器</option><option value="2">職業神器</option></select>
-      <select id="aElem"><option value="">全部屬性</option><option value="1">水</option><option value="2">火</option><option value="3">風</option><option value="4">光</option><option value="5">暗</option></select>
-      <select id="aArch"><option value="">全部職業</option><option value="1">攻擊</option><option value="2">防禦</option><option value="3">體力</option><option value="4">支援</option></select>
-      <select id="aMain"><option value="">全部主屬</option><option value="100">HP</option><option value="101">ATK</option><option value="102">DEF</option></select>
-      <select id="aCat"><option value="">全部類別</option></select>
-      <select id="aSub"><option value="">全部副屬</option></select>
-      <select id="aEq"><option value="">全部</option><option value="0">倉庫(未裝)</option><option value="1">已裝備</option></select>
-      <label>效率≥<input id="aEff" type="number" value="0" min="0" max="100" style="width:64px"></label>
-      <input id="aOwner" placeholder="裝在誰身上…" style="width:150px">
+      <select id="aType"><option value="" data-i18n="allArtifacts">全部神器</option><option value="1" data-i18n="elArtifacts">元素神器</option><option value="2" data-i18n="classArtifacts">職業神器</option></select>
+      <select id="aElem"><option value="" data-i18n="allElements">全部屬性</option><option value="1" data-i18n="water">水</option><option value="2" data-i18n="fire">火</option><option value="3" data-i18n="wind">風</option><option value="4" data-i18n="light">光</option><option value="5" data-i18n="dark">暗</option></select>
+      <select id="aArch"><option value="" data-i18n="allClasses">全部職業</option><option value="1" data-i18n="atk">攻擊</option><option value="2" data-i18n="defense">防禦</option><option value="3" data-i18n="hp">體力</option><option value="4" data-i18n="sup">支援</option></select>
+      <select id="aMain"><option value="" data-i18n="allMain">全部主屬</option><option value="100">HP</option><option value="101">ATK</option><option value="102">DEF</option></select>
+      <select id="aCat"><option value="" data-i18n="allCategories">全部類別</option></select>
+      <select id="aSub"><option value="" data-i18n="allSubstats">全部副屬</option></select>
+      <select id="aEq"><option value="" data-i18n="showAll">全部</option><option value="0" data-i18n="storage">倉庫(未裝)</option><option value="1" data-i18n="equipped">已裝備</option></select>
+      <label><span data-i18n="effLabel">效率≥</span><input id="aEff" type="number" value="0" min="0" max="100" style="width:64px"></label>
+      <input id="aOwner" data-i18n-placeholder="equippedOn" placeholder="裝在誰身上…" style="width:150px">
       <span class="muted" id="aCount"></span>
     </div>
-    <small class="note" style="display:block;margin:0 2px 8px">副屬「類別→副屬性」比照遊戲內篩選介面。ID 對照已依 sw-exporter 權威表全數校正（2026-07-21，4 帳號 4238 顆神器交叉驗證）；標「?」者僅繁中措辭待遊戲內核對、效果對應已確定。效率＝各副屬(值/觀測滿值)平均，為近似值。</small>
+    <small class="note" style="display:block;margin:0 2px 8px" data-i18n="artFilterNote">Sub-stat "Category → Sub-stat" filter follows the in-game UI. ID mapping verified against sw-exporter authoritative table (2026-07-21, 4 accounts × 4238 artifacts cross-validated); "?" marks are pending in-game wording confirmation, effect mapping is confirmed. Efficiency = average of each sub (value / observed max), approximate.</small>
     <div class="tablewrap"><table id="aTable"></table></div>
   </section>
 
@@ -348,95 +1085,95 @@ img.uico.big{width:44px;height:44px;border-radius:8px}
     <template id="fMonTpl">
       <div class="fMonRow card" style="margin-bottom:10px">
         <div class="fMonHead">
-          <span class="fMonTag muted">魔靈</span>
+          <span class="fMonTag muted" data-i18n="monster">魔靈</span>
           <span style="flex:1"></span>
-          <button type="button" class="btn2 fMonUp" title="上移">↑</button>
-          <button type="button" class="btn2 fMonDown" title="下移">↓</button>
-          <button type="button" class="btn2 fMonDel" title="移除此魔靈">✕ 移除</button>
+          <button type="button" class="btn2 fMonUp" data-i18n-title="monster">↑</button>
+          <button type="button" class="btn2 fMonDown" data-i18n-title="monster">↓</button>
+          <button type="button" class="btn2 fMonDel" data-i18n-title="removeMonster">✕ <span data-i18n="monster">移除</span></button>
         </div>
         <div class="controls">
-          <label>怪物 <span class="fUnitBox"><input type="hidden" class="fUnit"><span class="fUnitIco"></span><input type="text" class="fUnitSearch" placeholder="搜尋怪物…" autocomplete="off"><div class="fUnitList"></div></span></label>
-          <label>4件套 <select class="fSet4"></select></label>
-          <label>2件套 <select class="fSet2"></select></label>
-          <label>＋2件套 <select class="fSet2b"></select></label>
-          <label>＋2件套 <select class="fSet2c"></select></label>
-          <label>2洞主屬 <select class="fS2"></select></label>
-          <label>4洞主屬 <select class="fS4"></select></label>
-          <label>6洞主屬 <select class="fS6"></select></label>
+          <label><span data-i18n="monster">怪物</span> <span class="fUnitBox"><input type="hidden" class="fUnit"><span class="fUnitIco"></span><input type="text" class="fUnitSearch" data-i18n-placeholder="monster" placeholder="搜尋怪物…" autocomplete="off"><div class="fUnitList"></div></span></label>
+          <label><span data-i18n="set4">4件套</span> <select class="fSet4"></select></label>
+          <label><span data-i18n="set2">2件套</span> <select class="fSet2"></select></label>
+          <label><span data-i18n="set2b">＋2件套</span> <select class="fSet2b"></select></label>
+          <label><span data-i18n="set2c">＋2件套</span> <select class="fSet2c"></select></label>
+          <label><span data-i18n="slot2Main">2洞主屬</span> <select class="fS2"></select></label>
+          <label><span data-i18n="slot4Main">4洞主屬</span> <select class="fS4"></select></label>
+          <label><span data-i18n="slot6Main">6洞主屬</span> <select class="fS6"></select></label>
         </div>
         <div class="controls" style="margin-top:6px">
-          <label title="六顆中最多1顆無形，可補足缺1件的4件套或2件套；未勾選則無形符文不參與配裝"><input type="checkbox" class="fUseInt"> 含無形符文(補位)</label>
-          <span class="muted">優先屬性：</span>
+          <label data-i18n-title="includeIntTitle" title="六顆中最多1顆無形，可補足缺1件的4件套或2件套；未勾選則無形符文不參與配裝"><input type="checkbox" class="fUseInt"> <span data-i18n="includeInt">含無形符文(補位)</span></label>
+          <span class="muted" data-i18n="priorityStats">優先屬性：</span>
           <span class="fPrios"></span>
-          <button class="btn2 fAddPrio" type="button">＋ 優先屬性</button>
-          <span class="muted">額外門檻：</span>
+          <button class="btn2 fAddPrio" type="button" data-i18n="addPriority">＋ 優先屬性</button>
+          <span class="muted" data-i18n="extraThresholds">額外門檻：</span>
           <span class="fConds"></span>
-          <button class="btn2 fAddCond" type="button">＋ 新增條件</button>
+          <button class="btn2 fAddCond" type="button" data-i18n="addCondition">＋ 新增條件</button>
         </div>
       </div>
     </template>
     <div class="controls" style="margin-bottom:12px">
-      <span class="muted">模式：</span>
-      <button type="button" class="btn fModeBtn active" data-fmode="fit">單/多魔靈配裝</button>
-      <button type="button" class="btn2 fModeBtn" data-fmode="cap">套組產能分析</button>
-      <button type="button" class="btn2 fModeBtn" data-fmode="dung">地下城參考隊</button>
+      <span class="muted" data-i18n="mode">模式：</span>
+      <button type="button" class="btn fModeBtn active" data-fmode="fit" data-i18n="modeSingle">單/多魔靈配裝</button>
+      <button type="button" class="btn2 fModeBtn" data-fmode="cap" data-i18n="modeCap">套組產能分析</button>
+      <button type="button" class="btn2 fModeBtn" data-fmode="dung" data-i18n="modeDung">地下城參考隊</button>
     </div>
     <div id="fitModeFit">
     <div class="card">
       <div id="fMons"></div>
       <div class="controls" style="margin-top:8px">
-        <button class="btn2" id="fAddMon" type="button">＋ 新增魔靈</button>
-        <label><input type="checkbox" id="fPool"> 含裝在別隻的符文</label>
-        <button class="btn" id="fRun">計算最佳配裝</button>
+        <button class="btn2" id="fAddMon" type="button" data-i18n="addMonster">＋ 新增魔靈</button>
+        <label><input type="checkbox" id="fPool"> <span data-i18n="includeAll">含裝在別隻的符文</span></label>
+        <button class="btn" id="fRun" data-i18n="calcBestBuild">計算最佳配裝</button>
         <span id="fRunStatus" class="muted" style="font-size:12.5px"></span>
-        <button class="btn2 fitMergeBtn" type="button" title="配裝結果的副屬：磨刀值分開／加總 一鍵切換">磨刀：分開 ⇄ 加總</button>
-        <button class="btn2" id="fClear" type="button" title="清空魔靈清單與配裝結果，保留已匯入的JSON">🗑️ 清空</button>
-        <button class="btn2" id="fUndo" type="button" disabled title="沒有可復原的步驟">↩ 復原</button>
+        <button class="btn2 fitMergeBtn" type="button" data-i18n-title="grindSplitBtnTitle" title="配裝結果的副屬：磨刀值分開／加總 一鍵切換" data-i18n="grindSplitBtn">磨刀：分開 ⇄ 加總</button>
+        <button class="btn2" id="fClear" type="button" data-i18n-title="fitClearTitle" title="清空魔靈清單與配裝結果，保留已匯入的JSON">🗑️ <span data-i18n="clearBtn2">清空</span></button>
+        <button class="btn2" id="fUndo" type="button" disabled data-i18n-title="noUndoTitle" title="沒有可復原的步驟">↩ <span data-i18n="undoBtn">復原</span></button>
         <span style="margin-left:auto;display:inline-flex;gap:6px;align-items:center">
-          <select id="fPlanSel" style="max-width:180px"><option value="">— 已存方案 —</option></select>
-          <button class="btn2" id="fPlanLoad" type="button" title="載入選定方案（覆蓋目前清單與結果）">📂 載入</button>
-          <button class="btn2" id="fPlanSave" type="button" title="把目前配裝結果存成方案">💾 存方案</button>
-          <button class="btn2" id="fPlanDel" type="button" title="刪除選定方案">✕ 刪除</button>
-          <button class="btn2" id="fPlanExp" type="button" title="把方案匯出成 JSON 檔備份（可攜到其他瀏覽器/裝置）">📤 匯出</button>
-          <button class="btn2" id="fPlanImp" type="button" title="從匯出的 JSON 檔匯入方案">📥 匯入</button>
+          <select id="fPlanSel" style="max-width:180px"><option value="" data-i18n="savedPlans">— 已存方案 —</option></select>
+          <button class="btn2" id="fPlanLoad" type="button" data-i18n-title="loadPlanTitle" title="載入選定方案（覆蓋目前清單與結果）">📂 <span data-i18n="loadPlan">載入</span></button>
+          <button class="btn2" id="fPlanSave" type="button" data-i18n-title="savePlanTitle" title="把目前配裝結果存成方案">💾 <span data-i18n="savePlan">存方案</span></button>
+          <button class="btn2" id="fPlanDel" type="button" data-i18n-title="deletePlanTitle" title="刪除選定方案">✕ <span data-i18n="deletePlan">刪除</span></button>
+          <button class="btn2" id="fPlanExp" type="button" data-i18n-title="exportPlanTitle" title="把方案匯出成 JSON 檔備份（可攜到其他瀏覽器/裝置）">📤 <span data-i18n="exportPlan">匯出</span></button>
+          <button class="btn2" id="fPlanImp" type="button" data-i18n-title="importPlanTitle" title="從匯出的 JSON 檔匯入方案">📥 <span data-i18n="importPlan">匯入</span></button>
           <input type="file" id="fPlanImpFile" accept=".json,application/json" style="display:none">
         </span>
       </div>
-      <small class="note">可加入多隻魔靈一起配裝；<b>清單由上到下＝優先序</b>，排前面的先挑最佳解，用掉的符文後面的魔靈不會再用（同一顆符文不重複套用）。<br>每隻各自設定：引擎從「倉庫未裝 ＋ 這隻目前的符文」中挑選（勾選可納入全帳號符文）。四件套可選「無」；二件套最多三組（可重複，例如元氣×2＝四洞元氣）；未被套裝佔用的洞為自由洞，依目標挑最佳符文。<br>「優先屬性」可依序加入多個屬性（1.&gt;2.&gt;3. 加權遞減），滿足套裝後優先挑這些屬性高的符文；「額外門檻」可設下限(≥)與上限(≤)，只填一邊即可、留空＝該邊不限制；以最終體質（含基礎值＋套裝%）判斷，未達標時保留你選定的套裝、僅在同套內換副屬修補，仍達不到會顯示最佳嘗試並標紅。<br>勾「含無形符文」時，六顆最多 1 顆無形，可補足缺 1 件的套裝（例：3 顆暴走＋1 顆無形＝視同暴走 4 件套）；未勾選則無形符文完全不參與配裝。</small>
+      <small class="note" data-i18n="fitTemplateNote">可加入多隻魔靈一起配裝；<b>清單由上到下＝優先序</b>，排前面的先挑最佳解，用掉的符文後面的魔靈不會再用（同一顆符文不重複套用）。<br>每隻各自設定：引擎從「倉庫未裝 ＋ 這隻目前的符文」中挑選（勾選可納入全帳號符文）。四件套可選「無」；二件套最多三組（可重複，例如元氣×2＝四洞元氣）；未被套裝佔用的洞為自由洞，依目標挑最佳符文。<br>「優先屬性」可依序加入多個屬性（1.&gt;2.&gt;3. 加權遞減），滿足套裝後優先挑這些屬性高的符文；「額外門檻」可設下限(≥)與上限(≤)，只填一邊即可、留空＝該邊不限制；以最終體質（含基礎值＋套裝%）判斷，未達標時保留你選定的套裝、僅在同套內換副屬修補，仍達不到會顯示最佳嘗試並標紅。<br>勾「含無形符文」時，六顆最多 1 顆無形，可補足缺 1 件的套裝（例：3 顆暴走＋1 顆無形＝視同暴走 4 件套）；未勾選則無形符文完全不參與配裝。</small>
     </div>
-    <div id="fResults"><span class="muted">選好條件後按「計算最佳配裝」</span></div>
+      <div id="fResults"><span class="muted" data-i18n="fResultsPlaceholder">Select conditions then press "Calculate Best Build"</span></div>
     </div><!-- /fitModeFit -->
     <div id="fitModeCap" style="display:none">
       <div class="card">
         <div class="controls">
-          <label>4件套 <select id="capSet4"></select></label>
-          <label>2件套 <select id="capSet2"></select></label>
-          <label>速度門檻 ≥ <input type="number" id="capSpd" value="180" style="width:80px"></label>
-          <label>假設基礎速 <input type="number" id="capBase" value="100" style="width:80px"></label>
-          <label>2洞主屬 <select id="capMain2"><option value="">不限</option><option value="spd">攻擊速度</option></select></label>
+          <label data-i18n="cap4pc">4件套 <select id="capSet4"></select></label>
+          <label data-i18n="cap2pc">2件套 <select id="capSet2"></select></label>
+          <label data-i18n="capSpdThreshold">速度門檻 ≥ <input type="number" id="capSpd" value="180" style="width:80px"></label>
+          <label data-i18n="capBaseSpd">假設基礎速 <input type="number" id="capBase" value="100" style="width:80px"></label>
+          <label data-i18n="capSlot2Main">2洞主屬 <select id="capMain2"><option value="" data-i18n="anySet">不限</option><option value="spd" data-i18n="atkSpd">攻擊速度</option></select></label>
         </div>
         <div class="controls" style="margin-top:6px">
-          <label title="只用倉庫閒置(未裝備)的符文；不勾則全帳號6★符文(含已裝)都納入資源池"><input type="checkbox" id="capSpares"> 只用倉庫閒置符文</label>
-          <label title="每組最多1顆無形符文，可補足缺1件的套裝(例:3暴走+1無形=視同暴走4件套)"><input type="checkbox" id="capUseInt"> 含無形符文(補位)</label>
-          <button class="btn" id="capRun" type="button">計算最多可配組數</button>
+          <label data-i18n-title="onlySpare" title="只用倉庫閒置(未裝備)的符文；不勾則全帳號6★符文(含已裝)都納入資源池"><input type="checkbox" id="capSpares"> <span data-i18n="onlySpare">只用倉庫閒置符文</span></label>
+          <label data-i18n-title="capIntTitle" title="每組最多1顆無形符文，可補足缺1件的套裝(例:3暴走+1無形=視同暴走4件套)"><input type="checkbox" id="capUseInt"> <span data-i18n="capIntLabel">含無形符文(補位)</span></label>
+          <button class="btn" id="capRun" type="button" data-i18n="capCalcBtn">計算最多可配組數</button>
           <span id="capRunStatus" class="muted" style="font-size:12.5px"></span>
-          <button class="btn2" id="capClear" type="button" title="清空產能分析結果，保留已匯入的JSON">🗑️ 清空</button>
+          <button class="btn2" id="capClear" type="button" data-i18n-title="capClearTitle" title="清空產能分析結果，保留已匯入的JSON">🗑️ <span data-i18n="clearBtn2">清空</span></button>
         </div>
-        <small class="note">回答「用整個符文池最多能同時湊出幾組符合條件的套裝」。每組須：4件<b id="capN4">暴走</b>＋2件<b id="capN2">意志</b>、每洞一顆、最終速度≥門檻（速度只計符文＋自身套裝加成，不含神器/全隊型套）。組間符文不共用。<br>演算法＝貪婪最省（每組剛好踩線、不浪費快符文）＋局部交換優化，盡量避免「前面把快符文用光導致總組數變少」。基礎速為假設值（同型怪基礎速相同才準）；暫不含無形符文。</small>
+         <small class="note" data-i18n="capNote">Answers "how many sets of the given conditions can be built simultaneously from the rune pool." Each set requires: 4pc <b id="capN4">Violent</b> + 2pc <b id="capN2">Will</b>, one rune per slot, final speed ≥ threshold (speed counts only runes + own set bonus, not artifacts/team sets). Runes are not shared between sets.<br>Algorithm = greedy-minimal (each set barely meets the bar, no wasting fast runes) + local swap optimization to avoid "fast runes used up early reducing total sets." Base speed is assumed (same type monsters share base speed); invisible runes not included yet.</small>
       </div>
-      <div id="capResults"><span class="muted">設定條件後按「計算最多可配組數」</span></div>
+      <div id="capResults"><span class="muted" data-i18n="capResultsPlaceholder">Set conditions then press "Calculate Max Buildable Sets"</span></div>
     </div>
     <div id="fitModeDung" style="display:none">
       <div class="card">
         <div class="controls">
-          <label>地下城 <select id="dungSel"></select></label>
-          <label><input type="checkbox" id="dOwnedOnly"> 只顯示我有的角色</label>
-          <button class="btn2 fitMergeBtn" type="button" title="就地配裝結果的副屬：磨刀值分開／加總 一鍵切換">磨刀：分開 ⇄ 加總</button>
-          <span class="muted">綠=已擁有　紅=缺少</span>
+           <label><span data-i18n="dungeon">Dungeon</span> <select id="dungSel"></select></label>
+           <label><input type="checkbox" id="dOwnedOnly"> <span data-i18n="showOwnedOnly">只顯示我有的角色</span></label>
+           <button class="btn2 fitMergeBtn" type="button" data-i18n-title="grindSplitBtnTitle" data-i18n="grindSplitBtn">磨刀：分開 ⇄ 加總</button>
+           <span class="muted"><span data-i18n="dungLegend">綠=已擁有　紅=缺少</span></span>
         </div>
-        <small class="note">選一個地下城查看推薦隊伍；每個已擁有角色可就地「自動配裝」。按「＋ 帶入配裝清單」把整隊已擁有角色一次加入「單/多魔靈配裝」清單再一起計算。</small>
+        <small class="note" data-i18n="dungNote">Select a dungeon to see recommended teams; each owned monster can be "auto-built" on the spot. Press "+ Import to List" to add all owned monsters from a team to the "Auto Rune Builder" list for batch calculation.</small>
       </div>
-      <div id="dungRef"><span class="muted">從上方選一個地下城</span></div>
+      <div id="dungRef"><span class="muted" data-i18n="dungRefPlaceholder">Select a dungeon from above</span></div>
     </div>
   </section>
 
@@ -447,7 +1184,7 @@ img.uico.big{width:44px;height:44px;border-radius:8px}
 
 <div class="overlay" id="uModal"><div class="modal"><button class="x" id="uModalX">✕</button><div id="uModalBody"></div></div></div>
 <div class="overlay" id="rPicker"><div class="modal"><button class="x" id="rPickerX">✕</button><div id="rPickerBody"></div></div></div>
-<div class="overlay" id="uxModal"><div class="modal"><h2 id="uxmTitle"></h2><div class="uxmMsg" id="uxmMsg"></div><input class="uxmInput" id="uxmInput" type="text" style="display:none"><div class="uxmBtns"><button class="btn ghost" id="uxmCancel">取消</button><button class="btn" id="uxmOk">確定</button></div></div></div>
+<div class="overlay" id="uxModal"><div class="modal"><h2 id="uxmTitle"></h2><div class="uxmMsg" id="uxmMsg"></div><input class="uxmInput" id="uxmInput" type="text" style="display:none"><div class="uxmBtns"><button class="btn ghost" id="uxmCancel" data-i18n="cancel">取消</button><button class="btn" id="uxmOk" data-i18n="ok">確定</button></div></div></div>
 <div id="toastHost"></div>
 
 <script>
@@ -21961,8 +22698,8 @@ const BASE_STATS = {"12302":{"h":6420,"a":362,"d":527,"s":88,"cr":15,"cd":50,"re
 
 const IMP_effName={1:'HP',2:'HP%',3:'ATK',4:'ATK%',5:'DEF',6:'DEF%',8:'SPD',9:'CRate%',10:'CDmg%',11:'RES%',12:'ACC%'};
 // 套裝名以 對照表\符文.csv 官方繁中為準(25=Intangible無形、99=Immemorial遠古)
-const IMP_setName={1:'祝福',2:'守護',3:'迅速',4:'刀刃',5:'激怒',6:'集中',7:'忍耐',8:'猛攻',10:'絕望',11:'吸血',13:'暴走',14:'應報',15:'意志',16:'保護',17:'反擊',18:'破壞',19:'鬥志',20:'決心',21:'剛毅',22:'命中',23:'韌性',24:'封印',25:'無形',99:'遠古'};
-const IMP_attrName={1:'水',2:'火',3:'風',4:'光',5:'暗'};
+const IMP_setName={1:'Energy',2:'Guard',3:'Swift',4:'Blade',5:'Fatal',6:'Focus',7:'Endure',8:'Strengthen',10:'Despair',11:'Vampire',13:'Violent',14:'Revenge',15:'Will',16:'Shield',17:'Nemesis',18:'Destroy',19:'Determination',20:'Resolve',21:'Tolerance',22:'Accuracy',23:'Resilience',24:'Seal',25:'Intangible',99:'Ancient'};
+const IMP_attrName={1:'Water',2:'Fire',3:'Wind',4:'Light',5:'Dark'};
 const IMP_subMax={2:40,4:40,6:40,8:30,9:30,10:35,11:40,12:40,1:1875,3:100,5:100};
 const IMP_mainMax={1:2448,2:63,3:160,4:63,5:160,6:63,8:42,9:58,10:80,11:64,12:64};
 
@@ -22105,7 +22842,7 @@ function impSetStatus(msg, bad){
 function impApplyJson(text, srcName){
   const d=JSON.parse(text);
   if(!d || !Array.isArray(d.unit_list) || !Array.isArray(d.runes))
-    throw new Error('這不是魔靈召喚帳號匯出檔（缺 unit_list / runes）');
+    throw new Error(t('notSWFile'));
   const {units, runes, arts, crafts}=parseSmw(d);
   UNITS=units; RUNES=runes; ARTS=arts||[]; CRAFTS=crafts||[];
   window.JSON_DATE=((d.wizard_info&&d.wizard_info.wizard_last_login)||'').slice(0,10);
@@ -22115,23 +22852,23 @@ function impApplyJson(text, srcName){
   if(pname){
     const pe=document.getElementById('hPlayer');
     if(pe) pe.textContent=pname;
-    document.title='魔靈召喚 帳號分析工具 — '+pname;
+    document.title=t('title')+' — '+pname;
   }
   renderAll();
   if(typeof fitResetUndo==='function')fitResetUndo();
-  impSetStatus(`已匯入 ${srcName}：怪物 ${units.length}、符文 ${runes.length}、神器 ${ARTS.length}`);
+  impSetStatus(t('importedStatus',{srcName:srcName,n1:units.length,n2:runes.length,n3:ARTS.length}));
 }
 function impLoadFile(file){
   if(!file) return;
-  impSetStatus('讀取中…');
+  impSetStatus(t('reading'));
   const reader=new FileReader();
   reader.onload=e=>{
     try{
       impApplyJson(e.target.result, file.name);
       idbSave(file.name, e.target.result).catch(()=>{});
-    }catch(err){ impSetStatus('匯入失敗：'+err.message, true); }
+    }catch(err){ impSetStatus(t('impFailed')+err.message, true); }
   };
-  reader.onerror=()=>impSetStatus('讀檔失敗', true);
+  reader.onerror=()=>impSetStatus(t('readFailed'), true);
   reader.readAsText(file, 'utf-8');
 }
 function impClear(){
@@ -22139,14 +22876,15 @@ function impClear(){
   UNITS=[]; RUNES=[]; ARTS=[]; CRAFTS=[];
   const pe=document.getElementById('hPlayer');
   if(pe) pe.textContent='';
-  document.title='魔靈召喚 帳號分析工具';
+  document.title=t('title');
   const capR=document.getElementById('capResults');
-  if(capR) capR.innerHTML='<span class="muted">設定條件後按「計算最多可配組數」</span>';
+  if(capR) capR.innerHTML=`<span class="muted">${t('placeholderCap')}</span>`;
   if(typeof closeUnitModal==='function') closeUnitModal();
   renderAll();
-  impSetStatus('已清除匯入的資料，可匯入新的 JSON');
+  impSetStatus(t('dataCleared'));
 }
 document.addEventListener('DOMContentLoaded', ()=>{
+  applyI18N();
   const btn=document.getElementById('impBtn'), inp=document.getElementById('impFile'), clr=document.getElementById('clrBtn');
   if(btn&&inp){
     btn.onclick=()=>inp.click();
@@ -22155,7 +22893,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if(clr){
     clr.onclick=async()=>{
       if((UNITS&&UNITS.length)||(RUNES&&RUNES.length)){
-        if(!await uxConfirm('確定清除目前已匯入的怪物與符文資料？將一併清除瀏覽器內的自動還原快取，不會刪除任何檔案。',{danger:true,okText:'清除'})) return;
+        if(!await uxConfirm(t('clearConfirm'),{danger:true,okText:t('clearBtnConfirm')})) return;
       }
       impClear();
     };
@@ -22164,9 +22902,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   idbLoad().then(rec=>{
     if(!rec||!rec.text||(UNITS&&UNITS.length)) return;
     try{
-      impApplyJson(rec.text, rec.name||'快取資料');
+      impApplyJson(rec.text, rec.name||t('autoRestoreCache'));
       const dt=new Date(rec.savedAt||Date.now());
-      if(typeof uxToast==='function') uxToast(`已自動還原 ${dt.getMonth()+1}/${dt.getDate()} 匯入的「${rec.name||'資料'}」`,'success',5000);
+      if(typeof uxToast==='function') uxToast(t('autoRestored',{date:dt.getMonth()+1+'/'+dt.getDate(),name:rec.name||t('autoRestoreCache')}),'success',5000);
     }catch(e){ idbClear().catch(()=>{}); }
   }).catch(()=>{});
 });
@@ -22195,11 +22933,11 @@ function _uxOpen(kind,msg,o){
     const ov=document.getElementById('uxModal'), t=document.getElementById('uxmTitle'),
           m=document.getElementById('uxmMsg'), inp=document.getElementById('uxmInput'),
           ok=document.getElementById('uxmOk'), cancel=document.getElementById('uxmCancel');
-    t.textContent=o.title||(kind==='confirm'?'請確認':kind==='prompt'?'請輸入':'訊息');
+    t.textContent=o.title||(kind==='confirm'?t('confirmTitle'):kind==='prompt'?t('promptTitle'):t('msgTitle'));
     m.textContent=msg||'';
     inp.style.display=kind==='prompt'?'':'none'; inp.value=o.defaultValue||'';
     cancel.style.display=kind==='alert'?'none':'';
-    ok.textContent=o.okText||'確定'; cancel.textContent=o.cancelText||'取消';
+    ok.textContent=o.okText||t('ok'); cancel.textContent=o.cancelText||t('cancel');
     ok.className='btn'+(o.danger?' danger':'');
     // dismissValue：按 Esc/點背景 的回傳值；cancelValue：按取消鈕的回傳值（預設同 dismiss）
     const dismissVal=('dismissValue' in o)?o.dismissValue:(kind==='prompt'?null:(kind==='alert'?true:false));
@@ -22232,7 +22970,7 @@ function fitMarkSynced(){ _fitLastSyncedSnap=fitSnapshot(); }
 function fitUndoBtnSync(){
   const b=document.getElementById('fUndo'); if(!b)return;
   const top=_fitUndoStack[_fitUndoStack.length-1];
-  b.disabled=!top; b.title=top?('復原：'+top.label):'沒有可復原的步驟';
+  b.disabled=!top; b.title=top?(t('undoLabel')+top.label):t('noUndoTitle');
 }
 function fitPushUndo(label){
   _fitUndoStack.push({label,snap:fitSnapshot()});
@@ -22258,9 +22996,10 @@ async function withBusy(btns,fn){
 <script>
 // 匯入新 JSON 後由 importer.js 重新呼叫本函式即可整頁重繪
 function renderAll(){
+applyI18N();
 clearDocListeners();
 // ---------- 共用 ----------
-const attrClass={'水':'water','火':'fire','風':'wind','光':'light','暗':'dark'};
+const attrClass={'Water':'water','Fire':'fire','Wind':'wind','Light':'light','Dark':'dark','水':'water','火':'fire','風':'wind','光':'light','暗':'dark'};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const effCls=e=>e>=100?'eff-hi':e>=85?'eff-mid':'eff-lo';
 const ownedNames=new Set(UNITS.map(u=>u.en||u.n));   // 地下城模板用英文名比對
@@ -22292,8 +23031,8 @@ $$('nav button').forEach(b=>b.onclick=()=>{
 
 // ---------- 怪物庫 ----------
 let uSort={k:'atk',dir:-1};
-const uCols=[['n','中文名'],['en','英文名'],['at','屬'],['s','★'],['ns','天生'],['ar','職業'],['lv','Lv'],
- ['con','HP'],['atk','ATK'],['def','DEF'],['spd','SPD'],['cr','CR'],['cd','CD'],['re','RES'],['ac','ACC'],['rc','符文'],['rs','目前套裝']];
+const uCols=[['n',t('chineseName')],['en',t('englishName')],['at',t('element')],['s','★'],['ns',t('natural')],['ar',t('class')],['lv','Lv'],
+ ['con','HP'],['atk','ATK'],['def','DEF'],['spd','SPD'],['cr','CR'],['cd','CD'],['re','RES'],['ac','ACC'],['rc',t('runesLabel')],['rs',t('currentSets')]];
 function uFilter(){
   const q=$('#uSearch').value.toLowerCase(),at=$('#uAttr').value,st=$('#uStar').value,ar=$('#uArch').value,nt=$('#uNat').value;
   return UNITS.filter(u=>(!q||u.n.toLowerCase().includes(q)||(u.en&&u.en.toLowerCase().includes(q)))&&(!at||u.at==at)&&(!ar||u.ar==ar)
@@ -22302,7 +23041,7 @@ function uFilter(){
 function renderUnits(){
   let rows=uFilter();
   rows.sort((a,b)=>{let x=a[uSort.k],y=b[uSort.k];if(typeof x=='string')return uSort.dir*x.localeCompare(y);return uSort.dir*(x-y);});
-  $('#uCount').textContent=rows.length+' 隻';
+  $('#uCount').textContent=rows.length+t('unitCount');
   let h='<thead><tr>'+uCols.map(c=>`<th data-k="${c[0]}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
   h+=rows.map(u=>`<tr class="clk" data-id="${u.id}">
     <td class="uic">${(u.mid&&ICONS[u.mid])?`<img src="icons/${ICONS[u.mid]}" loading="lazy" alt="">`:''}<b>${u.n}</b></td>
@@ -22317,9 +23056,9 @@ function renderUnits(){
   $$('#uTable tbody tr').forEach(tr=>tr.onclick=()=>openUnitModal(unitById[tr.dataset.id]));
 }
 // ---------- 魔靈詳細彈窗（裝備符文＋魔礦） ----------
-const qName={1:'普通',2:'魔法',3:'稀有',4:'英雄',5:'傳說',6:'傳說'};
+const qName={1:'Normal',2:'Magic',3:'Rare',4:'Hero',5:'Legend',6:'Legend'};
 // 副屬字串內的魔礦標記：+N磨=磨刀石、寶=附魔寶石
-const markCraft=s=>s.replace(/\+(\d+)磨/g,'<span class="grind">磨刀石+$1</span>').replace(/寶/g,'<span class="gem">附魔</span>');
+const markCraft=s=>s.replace(/\+(\d+)磨/g,`<span class="grind">${t('grindstone')}+$1</span>`).replace(/寶/g,`<span class="gem">${t('markCraft')}</span>`);
 // 體質方塊：分開(基礎+符文) ⇄ 加總 可點擊切換
 let uStatMerged=false;
 const uStatRows=[['hp','HP','h'],['atk','ATK','a'],['def','DEF','d'],['spd','SPD','s'],['cr','CR%','cr'],['cd','CD%','cd'],['re','RES%','re'],['ac','ACC%','ac']];
@@ -22358,23 +23097,23 @@ function openUnitModal(u){
   let cards='';
   for(let sl=1;sl<=6;sl++){
     const r=bySlot[sl];
-    if(!r){cards+=`<div class="runebox empty">${sl}洞<br>（無符文）</div>`;continue;}
+    if(!r){cards+=`<div class="runebox empty">${sl}${t('slotLabel')}<br>${t('noRuneSlot')}</div>`;continue;}
     cards+=`<div class="runebox">
-      <div class="rhead"><span class="slot">${sl}洞 <span class="setbadge">${r.set||'?'}</span></span></div>
+      <div class="rhead"><span class="slot">${sl}${t('slotLabel')} <span class="setbadge">${r.set||'?'}</span></span></div>
       <div class="main">${r.m}</div>
-      ${r.pf?`<div class="pf">前綴 ${r.pf}</div>`:''}
-      <div class="subcell" data-ri="${r._i}" title="點擊：磨刀值加總" style="cursor:pointer">${fmtSubLines(r.sub,subMerge.has(r._i))}</div></div>`;
+      ${r.pf?`<div class="pf">${t('prefix')} ${r.pf}</div>`:''}
+      <div class="subcell" data-ri="${r._i}" title="${t('clickToMerge')}" style="cursor:pointer">${fmtSubLines(r.sub,subMerge.has(r._i))}</div></div>`;
   }
   uStatMerged=false;
   $('#uModalBody').innerHTML=`
     <h2>${u.n} <span class="pill ${attrClass[u.at]}">${u.at}</span> ${u.s}★</h2>
-    <div class="msub">${u.en||''}　·　${u.ar}　·　Lv${u.lv}　·　目前套裝：${u.rs||'—'}　·　符文平均效率 <b class="${effCls(avg)}">${avg}%</b></div>
-    <div class="mstats" id="uStats" title="點擊：切換 基礎+符文 ⇄ 加總" style="cursor:pointer"></div>
+    <div class="msub">${u.en||''}　·　${u.ar}　·　Lv${u.lv}　·　${t('currentSets')} ${u.rs||'—'}　·　${t('avgRuneEff')} <b class="${effCls(avg)}">${avg}%</b></div>
+    <div class="mstats" id="uStats" title="${t('statsToggleTitle')}" style="cursor:pointer"></div>
     ${setFx}
-    ${uArts.length?`<div style="margin:6px 0 2px">${uArts.map(a=>`<div style="margin:2px 0;font-size:13px"><b>${artKind(a)}神器</b>　<b>${ART_MAIN[a.mt]||a.mt}</b> +${a.mv}（+${a.lv}）　${artSubHtml(a)}</div>`).join('')}</div>`:''}
+    ${uArts.length?`<div style="margin:6px 0 2px">${uArts.map(a=>`<div style="margin:2px 0;font-size:13px"><b>${artKind(a)}${t('artifactLabel')}</b>　<b>${ART_MAIN[a.mt]||a.mt}</b> +${a.mv}（+${a.lv}）　${artSubHtml(a)}</div>`).join('')}</div>`:''}
     <div class="controls" style="margin:2px 0">
-      <button type="button" class="btn2" id="uMergeAll" title="一次把六顆符文的磨刀值加總／還原">磨刀：全部加總／還原</button>
-      ${finArt?'<label style="font-size:13px"><input type="checkbox" id="uArtMain"> 最終體質含神器主屬</label>':''}
+      <button type="button" class="btn2" id="uMergeAll" title="${t('grindMergeTitle')}">${t('grindMergeBtn')}</button>
+      ${finArt?`<label style="font-size:13px"><input type="checkbox" id="uArtMain"> ${t('finalStatsIncludeArt')}</label>`:''}
     </div>
     <div class="runegrid">${cards}</div>`;
   let curFin=fin;
@@ -22400,7 +23139,7 @@ renderUnits();
 const canon=m=>(typeof LINKS!=='undefined'&&LINKS[m])||m;
 const ownedGroups=new Set(UNITS.map(u=>u.mid).filter(Boolean).map(canon));
 const isOwned=c=>ownedGroups.has(canon(c.mid));
-const elDot={'水':'water','火':'fire','風':'wind','光':'light','暗':'dark'};
+const elDot={'Water':'water','Fire':'fire','Wind':'wind','Light':'light','Dark':'dark','水':'water','火':'fire','風':'wind','光':'light','暗':'dark'};
 const TRANK={S:0,A:1,B:2,C:3,D:4};
 function renderDex(){
   const q=$('#xSearch').value.toLowerCase(),at=$('#xAttr').value,ar=$('#xArch').value,
@@ -22414,12 +23153,12 @@ function renderDex(){
   });
   rows.sort((a,b)=>(TRANK[a.tier]-TRANK[b.tier])||(b.rp-a.rp)||(b.ns-a.ns));
   const have=rows.filter(isOwned).length;
-  $('#xCount').textContent=`${rows.length} 隻　已持有 ${have}（強度依 PvE meta + swranking S37 RTA）`;
+  $('#xCount').textContent=`${rows.length} ${t('monsters')}　${t('dexOwned')} ${have}（${t('dexStrengthNote')}）`;
   $('#dexGrid').innerHTML=rows.map(c=>{
     const owned=isOwned(c), nm=(c.zh||c.en);
     const bs=(typeof BASE_STATS!=='undefined'&&BASE_STATS[''+c.mid]);
-    const bsTxt=bs?`　體質(6★) HP ${bs.h}／ATK ${bs.a}／DEF ${bs.d}／SPD ${bs.s}`:'';
-    return `<div class="mon ${owned?'':'no'}" title="${c.en}｜強度 ${c.tier}${c.rp?'｜RTA出場 '+c.rp+'%':''}｜${owned?'已持有':'未持有'}${bsTxt}">
+    const bsTxt=bs?`　${t('dexStatsLabel')} HP ${bs.h}／ATK ${bs.a}／DEF ${bs.d}／SPD ${bs.s}`:'';
+    return `<div class="mon ${owned?'':'no'}" title="${c.en}｜${t('dexStrength')} ${c.tier}${c.rp?'｜'+t('dexRtaAppearance')+' '+c.rp+'%':''}｜${owned?t('dexOwned'):t('dexNotOwned')}${bsTxt}">
       <span class="tier t${c.tier}">${c.tier}</span><span class="el el-${elDot[c.at]||'light'}"></span>
       <img src="icons/${c.img}" loading="lazy" alt="">
       <div class="mn">${nm}</div>
@@ -22455,8 +23194,8 @@ const subMerge=new Set();
 function fmtSub(sub,merged){
   return (sub||'').split(' / ').filter(s=>!s.endsWith('(前)')).map(s=>{
     const m=s.match(/^(.+?)\+(\d+)(?:\+(\d+)磨)?(寶)?$/);
-    if(!m) return s.replace(/寶/g,'<span class="gem">附魔</span>');
-    const name=m[1], base=+m[2], grind=m[3]?+m[3]:0, gem=m[4]?'<span class="gem">附魔</span>':'';
+    if(!m) return s.replace(/寶/g,`<span class="gem">${t('markCraft')}</span>`);
+    const name=m[1], base=+m[2], grind=m[3]?+m[3]:0, gem=m[4]?`<span class="gem">${t('markCraft')}</span>`:'';
     if(grind) return merged
       ? `<span class="subsum">${name}+${base+grind}</span>${gem}`
       : `${name}+${base}<span class="grind">+${grind}</span>${gem}`;
@@ -22468,8 +23207,8 @@ function fmtSubLines(sub,merged){
   return (sub||'').split(' / ').filter(s=>!s.endsWith('(前)')).map(s=>{
     const m=s.match(/^(.+?)\+(\d+)(?:\+(\d+)磨)?(寶)?$/);
     let inner;
-    if(!m) inner=s.replace(/寶/g,'<span class="gem">附魔</span>');
-    else{ const name=m[1],base=+m[2],grind=m[3]?+m[3]:0,gem=m[4]?'<span class="gem">附魔</span>':'';
+    if(!m) inner=s.replace(/寶/g,`<span class="gem">${t('markCraft')}</span>`);
+    else{ const name=m[1],base=+m[2],grind=m[3]?+m[3]:0,gem=m[4]?`<span class="gem">${t('markCraft')}</span>`:'';
       inner=grind?(merged?`<span class="subsum">${name}+${base+grind}</span>${gem}`:`${name}+${base}<span class="grind">+${grind}</span>${gem}`):`${name}+${base}${gem}`; }
     return `<div class="subline">${inner}</div>`;
   }).join('');
@@ -22477,11 +23216,11 @@ function fmtSubLines(sub,merged){
 const gCls=g=>'g'+g, rollCls=v=>v>=5?'roll-hi':v>=3.5?'roll-mid':'roll-lo';
 // 套裝/主屬選項固定寫死全部(依 IMP_setName/IMP_effName)，不依實際符文資料產生(避免沒有該符文就不顯示)
 const ALL_SETS=Object.values(IMP_setName).filter(Boolean);
-$('#rSet').innerHTML='<option value="">全部套裝</option>'+ALL_SETS.map(s=>`<option>${s}</option>`).join('');
+$('#rSet').innerHTML=`<option value="">${t('allSets')}</option>`+ALL_SETS.map(s=>`<option>${s}</option>`).join('');
 const ALL_MAINS=Object.values(IMP_effName);
-$('#rMain').innerHTML='<option value="">全部主屬</option>'+ALL_MAINS.map(s=>`<option>${s}</option>`).join('');
+$('#rMain').innerHTML=`<option value="">${t('allMain')}</option>`+ALL_MAINS.map(s=>`<option>${s}</option>`).join('');
 let rSort={k:'ef',dir:-1};
-const rCols=[['gv','評級'],['ef','效率'],['rl','有效roll'],['sl','洞'],['st','★'],['set','套裝'],['m','主屬'],['pf','前綴'],['sub','副屬'],['lv','+'],['ow','裝備者']];
+const rCols=[['gv',t('grade')],['ef',t('efficiency')],['rl',t('subEffRoll')],['sl',t('slot')],['st','★'],['set',t('runeName')],['m',t('mainStat')],['pf',t('prefix')],['sub',t('substats')],['lv','+'],['ow',t('owner')]];
 function rFilter(){
   const set=$('#rSet').value,sl=$('#rSlot').value,mn=$('#rMain').value,gd=$('#rGrade').value,eq=$('#rEq').value,anc=$('#rAnc').value,
     ef=+$('#rEff').value,ow=$('#rOwner').value.toLowerCase();
@@ -22490,7 +23229,7 @@ function rFilter(){
 }
 // ── 副屬優先排序面板 ──
 const SUB_STATS=Object.values(IMP_effName); // HP,HP%,ATK,ATK%,DEF,DEF%,SPD,CRate%,CDmg%,RES%,ACC%
-const subStatOpts='<option value="">— 選副屬 —</option>'+SUB_STATS.map(s=>`<option>${s}</option>`).join('');
+const subStatOpts=`<option value="">— ${t('selectSubstat')} —</option>`+SUB_STATS.map(s=>`<option>${s}</option>`).join('');
 function readPrios(){ // 讀面板→[{stat,min}]（依畫面順序＝優先序，忽略未選副屬）
   return $$('#rPrioRows .prioRow').map(row=>({stat:row.querySelector('.pStat').value,min:row.querySelector('.pMin').value.trim()})).filter(p=>p.stat);
 }
@@ -22503,8 +23242,8 @@ function refreshPrioOpts(){
 function addPrioRow(){
   if($$('#rPrioRows .prioRow').length>=5)return;
   const span=document.createElement('span'); span.className='prioRow'; span.style.cssText='display:inline-flex;gap:2px;align-items:center;margin-right:6px';
-  span.innerHTML=`<select class="pStat">${subStatOpts}</select><input class="pMin" type="number" placeholder="最小值" style="width:74px" min="0">`+
-    `<button class="btn2 pDel" type="button" title="移除">✕</button>`;
+  span.innerHTML=`<select class="pStat">${subStatOpts}</select><input class="pMin" type="number" placeholder="${t('minVal')}" style="width:74px" min="0">`+
+    `<button class="btn2 pDel" type="button" title="${t('remove')}">✕</button>`;
   $('#rPrioRows').appendChild(span);
   span.querySelector('.pStat').oninput=()=>{refreshPrioOpts();renderRunes();};
   span.querySelector('.pMin').oninput=renderRunes;
@@ -22523,7 +23262,7 @@ function renderRunes(){
   }else{
     rows.sort((a,b)=>{let x=a[rSort.k],y=b[rSort.k];if(typeof x=='string')return rSort.dir*(''+x).localeCompare(''+y);return rSort.dir*(x-y);});
   }
-  $('#rCount').textContent=rows.length+' 個';
+  $('#rCount').textContent=rows.length+t('runeCount');
   let h='<thead><tr>'+rCols.map(c=>`<th data-k="${c[0]}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
   h+=rows.slice(0,600).map(r=>`<tr>
     <td><span class="gbadge ${gCls(r.gr)}">${r.gr}</span></td>
@@ -22531,10 +23270,10 @@ function renderRunes(){
     <td class="${rollCls(r.rl)}">${r.rl}</td><td>${r.sl}</td>
     <td>${r.anc?'<span class="anc">'+r.st+'★A</span>':r.st+'★'}</td>
     <td>${r.set||''}</td><td><b>${r.m}</b></td><td class="muted">${r.pf||''}</td>
-    <td class="subcell" data-ri="${r._i}" title="點擊：磨刀值加總" style="white-space:normal;min-width:280px">${fmtSub(r.sub,subMerge.has(r._i))}</td><td>+${r.lv}</td>
-    <td>${r.ow?(unitIcon(r.owen,r.owmid,'uico')||'<span class="own">'+r.ow+'</span>'):'<span class="muted">倉庫</span>'}</td></tr>`).join('');
+    <td class="subcell" data-ri="${r._i}" title="${t('clickToMerge')}" style="white-space:normal;min-width:280px">${fmtSub(r.sub,subMerge.has(r._i))}</td><td>+${r.lv}</td>
+    <td>${r.ow?(unitIcon(r.owen,r.owmid,'uico')||`<span class="own">${r.ow}</span>`):`<span class="muted">${t('storageShort')}</span>`}</td></tr>`).join('');
   $('#rTable').innerHTML=h+'</tbody>';
-  if(rows.length>600)$('#rCount').textContent+='（顯示前600）';
+  if(rows.length>600)$('#rCount').textContent+='（'+t('showingFirst',{n:600})+'）';
   $$('#rTable th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;rSort.dir=rSort.k==k?-rSort.dir:(k=='gv'?1:-1);rSort.k=k;renderRunes();});
   $$('#rTable .subcell').forEach(td=>td.onclick=()=>{const i=+td.dataset.ri;subMerge.has(i)?subMerge.delete(i):subMerge.add(i);td.innerHTML=fmtSub(RUNES[i].sub,subMerge.has(i));});
 }
@@ -22554,8 +23293,8 @@ const GRIND_MAX={ // stat -> {品質碼:磨刀上限}
   'HP%':{4:7,5:10,14:10,15:12},'ATK%':{4:7,5:10,14:10,15:12},'DEF%':{4:7,5:10,14:10,15:12},
   'HP':{4:450,5:580,14:580,15:700},'ATK':{4:22,5:30,14:30,15:40},'DEF':{4:22,5:30,14:30,15:40}
 };
-const GR_NAME={1:'普通',2:'魔法',3:'稀有',4:'英雄',5:'傳說'};
-const grName=g=>g>10?('上古'+(GR_NAME[g-10]||g)):(GR_NAME[g]||''+g);
+const GR_NAME={1:'Normal',2:'Magic',3:'Rare',4:'Hero',5:'Legend'};
+const grName=g=>g>10?(t('ancient')+(GR_NAME[g-10]||g)):(GR_NAME[g]||''+g);
 // 副屬逐行解析：{st,val,grind,gem,pre}
 function subLines(r){
   return (r.sub||'').split(' / ').map(s=>{
@@ -22566,16 +23305,16 @@ function subLines(r){
     return {st:m[1].trim(),val:+m[2],grind:m[3]?+m[3]:0,gem:!!m[4],pre};
   }).filter(Boolean);
 }
-const ckOwnerHtml=r=>r.ow?(unitIcon(r.owen,r.owmid,'uico')||'<span class="own">'+r.ow+'</span>'):'<span class="muted">倉庫</span>';
+const ckOwnerHtml=r=>r.ow?(unitIcon(r.owen,r.owmid,'uico')||`<span class="own">${r.ow}</span>`):`<span class="muted">${t('storageShort')}</span>`;
 function ckRuneRow(r,extra){
   return `<tr><td><span class="gbadge ${gCls(r.gr)}">${r.gr}</span></td><td class="${effCls(r.ef)}">${r.ef}%</td><td>${r.sl}</td>
     <td>${r.anc?'<span class="anc">'+r.st+'★A</span>':r.st+'★'}</td><td>${r.set||''}</td><td><b>${r.m}</b></td>
     <td style="white-space:normal;min-width:260px">${fmtSub(r.sub,false)}</td><td>+${r.lv}</td><td>${ckOwnerHtml(r)}</td>${extra||''}</tr>`;
 }
-const CK_TH='<tr><th>評級</th><th>效率</th><th>洞</th><th>星</th><th>套裝</th><th>主屬</th><th>副屬</th><th>+</th><th>裝備者</th>';
+const CK_TH=`<tr><th>${t('grade')}</th><th>${t('efficiency')}</th><th>${t('slot')}</th><th>★</th><th>${t('runeName')}</th><th>${t('mainStat')}</th><th>${t('substats')}</th><th>+</th><th>${t('owner')}</th>`;
 function renderCheck(){
   const body=$('#ckBody'); if(!body)return;
-  if(!RUNES.length){ body.innerHTML='<div class="card muted">尚未匯入資料。</div>'; return; }
+  if(!RUNES.length){ body.innerHTML=`<div class="card muted">${t('notImported')}</div>`; return; }
   const upEff=+$('#ckUpEff').value||85, enEff=+$('#ckEnEff').value||75, sellEff=+$('#ckSellEff').value||70;
   const sellIncEq=$('#ckSellEq').checked, sellIncAnc=$('#ckSellAnc').checked;
   let h='';
@@ -22586,14 +23325,14 @@ function renderCheck(){
     const pot=Math.round((r.ef+(1-mainRatio)/2.8*100)*10)/10;
     return pot>=upEff?{r,pot}:null;
   }).filter(Boolean).sort((a,b)=>b.pot-a.pot);
-  h+=`<div class="card"><h3 style="margin-top:0">⬆️ 值得升 +15（${ups.length} 顆）</h3>
-    <small class="note">+12～+14 的符文升滿只補主屬值、不吃隨機 roll，列出升滿後效率 ≥ ${upEff}% 者。</small>
-    <div class="tablewrap"><table>${ups.length?('<thead>'+CK_TH+'<th>效率→+15</th></tr></thead><tbody>'+ups.slice(0,40).map(({r,pot})=>ckRuneRow(r,`<td><b class="${effCls(pot)}">${r.ef}% → ${pot}%</b></td>`)).join('')+'</tbody>'):''}</table></div>
-    ${ups.length>40?'<small class="note">（顯示前 40）</small>':''}${ups.length?'':'<span class="muted">沒有符合的符文。</span>'}</div>`;
+  h+=`<div class="card"><h3 style="margin-top:0">${t('worthUpgrade')}（${ups.length}）</h3>
+    <small class="note">${t('worthUpgradeNote', {eff: upEff})}</small>
+    <div class="tablewrap"><table>${ups.length?(`<thead>${CK_TH}<th>${t('efficiency')}→+15</th></tr></thead><tbody>`+ups.slice(0,40).map(({r,pot})=>ckRuneRow(r,`<td><b class="${effCls(pot)}">${r.ef}% → ${pot}%</b></td>`)).join('')+'</tbody>'):''}</table></div>
+    ${ups.length>40?`<small class="note">(${t('showingFirst', {n: 40})})</small>`:''}    ${ups.length?'':`<span class="muted">${t('noMatch')}</span>`}</div>`;
   // ── 2. 值得磨刀：持有的英雄/傳說磨刀石 × 同套裝符文中「該副屬磨刀提升空間最大」者 ──
   const stones=CRAFTS.filter(c=>(c.ct===1||c.ct===5||c.ct===3)&&c.gr%10>=4&&GRIND_MAX[c.st]);
   const stoneGroups={};
-  stones.forEach(c=>{ const k=(c.ct===3?'無形':c.set)+'|'+c.st+'|'+c.gr; (stoneGroups[k]=stoneGroups[k]||{set:(c.ct===3?'無形':c.set),st:c.st,gr:c.gr,int:c.ct===3,n:0}).n++; });
+  stones.forEach(c=>{ const k=(c.ct===3?t('intangible'):c.set)+'|'+c.st+'|'+c.gr; (stoneGroups[k]=stoneGroups[k]||{set:(c.ct===3?t('intangible'):c.set),st:c.st,gr:c.gr,int:c.ct===3,n:0}).n++; });
   const stOrder={'SPD':0,'ATK%':1,'HP%':2,'DEF%':3,'HP':4,'ATK':5,'DEF':6};
   const groups=Object.values(stoneGroups).sort((a,b)=>(stOrder[a.st]-stOrder[b.st])||(b.gr-a.gr));
   let grRows='';
@@ -22605,18 +23344,18 @@ function renderCheck(){
       return line?{r,line,gain:max-line.grind}:null;
     }).filter(Boolean).sort((a,b)=>(b.r.ef-a.r.ef)).slice(0,3);
     const tHtml=targets.length?targets.map(({r,line,gain})=>
-      `<span style="display:inline-block;margin:1px 6px 1px 0">${ckOwnerHtml(r)} ${r.sl}洞 <b class="${effCls(r.ef)}">${r.ef}%</b> ${line.st}+${line.val}${line.grind?'+'+line.grind+'磨':''} → <b style="color:var(--acc)">+${max}</b>（賺 ${gain}）</span>`).join(''):'<span class="muted">無適用符文</span>';
+      `<span style="display:inline-block;margin:1px 6px 1px 0">${ckOwnerHtml(r)} ${r.sl}${t('slot')} <b class="${effCls(r.ef)}">${r.ef}%</b> ${line.st}+${line.val}${line.grind?'+'+line.grind+t('grindShort'):''} → <b style="color:var(--acc)">+${max}</b>（${t('gain')} ${gain}）</span>`).join(''):`<span class="muted">${t('noApplicableRunes')}</span>`;
     grRows+=`<div class="slotline" style="align-items:flex-start"><span style="white-space:nowrap"><b>${g.set}</b>·${g.st}·${grName(g.gr)}${g.gr>10?'<sup style="color:var(--warn)">?</sup>':''} ×${g.n}</span><span style="text-align:right">${tHtml}</span></div>`;
   });
-  h+=`<div class="card"><h3 style="margin-top:0">🪨 值得磨刀（持有英雄/傳說磨刀石 ${stones.length} 顆）</h3>
-    <small class="note">每種磨刀石列出「同套裝、該副屬離此品質磨刀上限最遠」的前 3 顆高效率符文；上古上限值為推定(標?)。</small>
-    ${grRows||'<span class="muted">沒有英雄/傳說品質的磨刀石，或帳號檔未含魔礦清單。</span>'}
-    ${groups.length>30?'<small class="note">（顯示前 30 種）</small>':''}</div>`;
+  h+=`<div class="card"><h3 style="margin-top:0">${t('worthGrind')}（${stones.length}）</h3>
+    <small class="note">${t('grindNote')}</small>
+    ${grRows||`<span class="muted">${t('noGrindstones')}</span>`}
+    ${groups.length>30?`<small class="note">(${t('showingFirst', {n: 30})})</small>`:''}</div>`;
   // ── 3. 附魔建議：有固定攻/防/體廢副屬、未鑲寶、其餘效率仍達標 → 建議洗掉該行 ──
   const JUNK=new Set(['ATK','DEF','HP']);
   const gems=CRAFTS.filter(c=>(c.ct===2||c.ct===6||c.ct===4)&&c.gr%10>=4);
   const gemBySet={};
-  gems.forEach(c=>{ const k=c.ct===4?'無形':c.set; (gemBySet[k]=gemBySet[k]||{}); gemBySet[k][c.st]=(gemBySet[k][c.st]||0)+1; });
+  gems.forEach(c=>{ const k=c.ct===4?t('intangible'):c.set; (gemBySet[k]=gemBySet[k]||{}); gemBySet[k][c.st]=(gemBySet[k][c.st]||0)+1; });
   const ens=RUNES.map(r=>{
     if(r.ef<enEff)return null;
     const Ls=subLines(r);
@@ -22628,24 +23367,24 @@ function renderCheck(){
   }).filter(Boolean).sort((a,b)=>b.r.ef-a.r.ef);
   let enRows='';
   ens.slice(0,40).forEach(({r,worst})=>{
-    const setKey=r.sid===INT_SID?'無形':r.set;
+    const setKey=r.sid===INT_SID?t('intangible'):r.set;
     const inv=gemBySet[setKey];
     const invTxt=inv?Object.entries(inv).map(([st,n])=>`${st}×${n}`).join(' '):'—';
-    enRows+=ckRuneRow(r,`<td><b style="color:var(--bad)">洗 ${worst.st}+${worst.val}</b></td><td class="muted" style="white-space:nowrap">${invTxt}</td>`);
+    enRows+=ckRuneRow(r,`<td><b style="color:var(--bad)">${t('rerollLabel')} ${worst.st}+${worst.val}</b></td><td class="muted" style="white-space:nowrap">${invTxt}</td>`);
   });
-  h+=`<div class="card"><h3 style="margin-top:0">💎 附魔建議（${ens.length} 顆）</h3>
-    <small class="note">效率 ≥ ${enEff}%、含固定攻/防/體廢副屬、尚未鑲寶石者；建議把該行洗成有用屬性。「持有寶石」列同套裝英雄/傳說寶石庫存。</small>
-    <div class="tablewrap"><table>${ens.length?('<thead>'+CK_TH+'<th>建議</th><th>持有寶石</th></tr></thead><tbody>'+enRows+'</tbody>'):''}</table></div>
-    ${ens.length>40?'<small class="note">（顯示前 40）</small>':''}${ens.length?'':'<span class="muted">沒有符合的符文。</span>'}</div>`;
+  h+=`<div class="card"><h3 style="margin-top:0">${t('enchantSuggest')}（${ens.length}）</h3>
+    <small class="note">${t('enchantNote', {eff: enEff})}</small>
+    <div class="tablewrap"><table>${ens.length?(`<thead>${CK_TH}<th>${t('suggestion')}</th><th>${t('heldGems')}</th></tr></thead><tbody>${enRows}</tbody>`):''}</table></div>
+    ${ens.length>40?`<small class="note">(${t('showingFirst', {n: 40})})</small>`:''}    ${ens.length?'':`<span class="muted">${t('noMatch')}</span>`}</div>`;
   // ── 4. 可賣清單 ──
   const teamUsed=new Set(); (window.FIT_STATE&&FIT_STATE.list||[]).forEach(e=>{for(let sl=1;sl<=6;sl++){if(e.plan&&e.plan[sl]!=null)teamUsed.add(e.plan[sl]);}});
   const sells=RUNES.filter(r=>
     r.ef<sellEff && (sellIncEq||r.eq==0) && (sellIncAnc||!r.anc) && !teamUsed.has(r.id)
   ).sort((a,b)=>a.ef-b.ef);
-  h+=`<div class="card"><h3 style="margin-top:0">🗑️ 可賣清單（${sells.length} 顆）</h3>
-    <small class="note">效率 &lt; ${sellEff}%${sellIncEq?'':'、僅倉庫未裝'}${sellIncAnc?'':'、不含上古'}；已排除目前配裝隊伍占用的符文。賣前請自行再確認。</small>
-    <div class="tablewrap"><table>${sells.length?('<thead>'+CK_TH+'</tr></thead><tbody>'+sells.slice(0,100).map(r=>ckRuneRow(r)).join('')+'</tbody>'):''}</table></div>
-    ${sells.length>100?'<small class="note">（顯示前 100）</small>':''}${sells.length?'':'<span class="muted">沒有符合的符文。</span>'}</div>`;
+  h+=`<div class="card"><h3 style="margin-top:0">${t('sellList')}（${sells.length}）</h3>
+    <small class="note"><span data-i18n="capNote">${t('sellNote', {eff: sellEff, eq: sellIncEq, anc: sellIncAnc})}</span></small>
+    <div class="tablewrap"><table>${sells.length?(`<thead>${CK_TH}</tr></thead><tbody>${sells.slice(0,100).map(r=>ckRuneRow(r)).join('')}</tbody>`):''}</table></div>
+    ${sells.length>100?`<small class="note">(${t('showingFirst', {n: 100})})</small>`:''}    ${sells.length?'':`<span class="muted">${t('noMatch')}</span>`}</div>`;
   body.innerHTML=h;
 }
 function rShowCheck(on){
@@ -22664,7 +23403,7 @@ $('#ckRun').onclick=renderCheck;
 const ART_MAIN={100:'HP',101:'ATK',102:'DEF'};
 const ART_ELEM={1:'水',2:'火',3:'風',4:'光',5:'暗'};
 const ART_ARCH={1:'攻擊',2:'防禦',3:'體力',4:'支援'};
-const ART_RANK={1:'普通',2:'魔法',3:'稀有',4:'英雄',5:'傳說',6:'傳說'};
+const ART_RANK={1:'Normal',2:'Magic',3:'Rare',4:'Hero',5:'Legend',6:'Legend'};
 // 遊戲副屬類別(依官方 UI)：id->顯示名
 const ART_CATS=[['dmg','增加傷害量'],['red','減少傷害量'],['buff','增強強化效果'],['heal','增加恢復量'],['acc','增加效果命中'],['add','追加傷害效果'],['etc','其他效果']];
 // 副屬解碼 id->[官方繁中名, 觀測滿值, 類別, 措辭推定旗標]
@@ -22693,7 +23432,7 @@ const ART_SUB={
  203:['受無法行動效果時攻擊速度增加',6,'etc',1],216:['復活時體力',15,'etc',1],217:['復活時攻擊條增加',23,'etc',1]
 };
 const artSubName=id=>{const s=ART_SUB[id];return s?(s[0]+(s[3]?'<sup style="color:var(--warn)">?</sup>':'')):('#'+id);};
-const artKind=a=>a.ty==1?('元素·'+(ART_ELEM[a.el]||'')):(a.ty==2?('職業·'+(ART_ARCH[a.ar]||'')):'');
+const artKind=a=>a.ty==1?(t('elementDot')+(ART_ELEM[a.el]||'')):(a.ty==2?(t('archDot')+(ART_ARCH[a.ar]||'')):'');
 function artEff(a){
   let sum=0;
   for(const e of (a.sub||[])){ const s=ART_SUB[e[0]]; const mx=s?s[1]:e[1]; if(mx)sum+=Math.min(1,e[1]/mx); }
@@ -22708,16 +23447,16 @@ function artSubHtml(a){
   }).join(' ');
 }
 // 類別下拉(靜態) + 副屬下拉(依所選類別串接，只列資料中出現過的)
-(()=>{ const s=$('#aCat'); if(s)s.innerHTML='<option value="">全部類別</option>'+ART_CATS.map(c=>`<option value="${c[0]}">${c[1]}</option>`).join(''); })();
+(()=>{ const s=$('#aCat'); if(s)s.innerHTML=`<option value="">${t('allCats')}</option>`+ART_CATS.map(c=>`<option value="${c[0]}">${c[1]}</option>`).join(''); })();
 function fillArtSub(){
   const sel=$('#aSub'); if(!sel)return;
   const cat=$('#aCat')?$('#aCat').value:'';
   const ids=new Set(); ARTS.forEach(a=>(a.sub||[]).forEach(e=>ids.add(e[0])));
   const list=[...ids].filter(id=>!cat||(ART_SUB[id]&&ART_SUB[id][2]===cat)).sort((x,y)=>x-y);
-  sel.innerHTML='<option value="">全部副屬</option>'+list.map(id=>`<option value="${id}">${ART_SUB[id]?ART_SUB[id][0].replace(/<[^>]+>/g,''):'#'+id}</option>`).join('');
+  sel.innerHTML=`<option value="">${t('allSubs')}</option>`+list.map(id=>`<option value="${id}">${ART_SUB[id]?ART_SUB[id][0].replace(/<[^>]+>/g,''):'#'+id}</option>`).join('');
 }
 let aSort={k:'ef',dir:-1};
-const aCols=[['ef','效率'],['kind','神器'],['main','主屬'],['rk','品質'],['lv','+'],['subs','副屬'],['ow','裝備者']];
+const aCols=[['ef',t('efficiency')],['kind',t('artifact')],['main',t('mainStat')],['rk',t('grade')],['lv','+'],['subs',t('substats')],['ow',t('owner')]];
 function aFilter(){
   const ty=$('#aType').value,el=$('#aElem').value,ar=$('#aArch').value,mn=$('#aMain').value,
         cat=$('#aCat')?$('#aCat').value:'',sb=$('#aSub').value,eq=$('#aEq').value,ef=+$('#aEff').value||0,ow=$('#aOwner').value.toLowerCase();
@@ -22739,7 +23478,7 @@ function renderArts(){
     if(aSort.k=='ow')return aSort.dir*((p.a.ow||'').localeCompare(q.a.ow||''));
     return 0;
   });
-  $('#aCount').textContent=rows.length+' 個';
+  $('#aCount').textContent=rows.length+t('artCount');
   let h='<thead><tr>'+aCols.map(c=>`<th data-k="${c[0]}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
   h+=rows.slice(0,600).map(({a,ef})=>`<tr>
     <td class="${artEffCls(ef)}">${ef}%</td>
@@ -22748,9 +23487,9 @@ function renderArts(){
     <td>${ART_RANK[a.rk]||a.rk}</td>
     <td>+${a.lv}</td>
     <td style="white-space:normal;min-width:340px">${artSubHtml(a)}</td>
-    <td>${a.ow?(unitIcon(a.owen,a.owmid,'uico')||'<span class="own">'+a.ow+'</span>'):'<span class="muted">倉庫</span>'}</td></tr>`).join('');
+    <td>${a.ow?(unitIcon(a.owen,a.owmid,'uico')||`<span class="own">${a.ow}</span>`):`<span class="muted">${t('storageShort')}</span>`}</td></tr>`).join('');
   $('#aTable').innerHTML=h+'</tbody>';
-  if(rows.length>600)$('#aCount').textContent+='（顯示前600）';
+  if(rows.length>600)$('#aCount').textContent+='（'+t('showingFirst',{n:600})+'）';
   $$('#aTable th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;aSort.dir=aSort.k==k?-aSort.dir:-1;aSort.k=k;renderArts();});
 }
 ['aType','aElem','aArch','aMain','aSub','aEq','aEff','aOwner'].forEach(id=>{const el=$('#'+id);if(el)el.oninput=renderArts;});
@@ -22761,128 +23500,128 @@ renderArts();
 // ---------- 地下城 meta DB ----------
 // 角色以 SWARFARM 英文名比對；role=定位，runes=建議套裝
 const DUNGEONS=[
- {n:'巨人窟 GB12',sub:'符文/魔力石主要來源。核心：破防+多段+回能，可做全自動循環。',teams:[
-   {tl:'穩定自動隊',us:[
-     ['Veromos','破防+持續傷害+淨化','絕望/意志'],
-     ['Bernard','回能+攻速buff','迅速/集中'],
-     ['Sabrina','範圍破防','刀刃/集中'],
-     ['Sigmarus','冰凍+輸出','刀刃/激怒'],
-     ['Loren','多段輸出/減攻速','絕望/刀刃']]},
-   {tl:'高速循環(需高速符)',us:[
-     ['Bernard','回能','迅速/集中'],
-     ['Galleon','破防+攻擊buff','迅速/集中'],
-     ['Verdehile','爆擊回能','暴走/刀刃'],
-     ['Lushen','斬殺(副手)','刀刃/激怒']]}]},
- {n:'巨龍巢穴 DB12',sub:'攻速/激怒/命中符文來源。需破防、抗擊暈、穩定輸出。',teams:[
-   {tl:'通用隊',us:[
-     ['Veromos','淨化+持續','絕望/意志'],
-     ['Galleon','破防+攻buff','迅速/意志'],
-     ['Bernard','回能','迅速/集中'],
-     ['Sigmarus','冰凍控場','刀刃/激怒'],
-     ['Lushen','範圍斬殺','刀刃/激怒']]},
-   {tl:'雙防破速刷',us:[
-     ['Chasun','奶+回能','意志/迅速'],
-     ['Sabrina','破防','刀刃/集中'],
-     ['Katarina','高輸出','暴走/刀刃'],
-     ['Fran','免疫+奶','意志/迅速']]}]},
- {n:'死者之塔 NB12',sub:'激怒傷害/暴走/意志符文來源。怪物會反擊+回能,需破防與控場。',teams:[
-   {tl:'通用隊',us:[
-     ['Veromos','淨化+持續','絕望/意志'],
-     ['Bernard','回能','迅速/集中'],
-     ['Sabrina','破防+暈','刀刃/集中'],
-     ['Sigmarus','冰凍','刀刃/激怒'],
-     ['Loren','多段輸出','絕望/刀刃']]}]},
- {n:'鋼鐵要塞 SF10',sub:'免疫/專注/引導符文。BOSS會上保護,需高頻多段。',teams:[
-   {tl:'多段隊',us:[
-     ['Veromos','淨化+破防','絕望/意志'],
-     ['Bernard','回能','迅速/集中'],
-     ['Tesarion','多段+灼燒','暴走/刀刃'],
-     ['Sath','破防+持續','絕望/意志']]}]},
- {n:'懲罰者地穴 PC10',sub:'反擊/破壞符文。BOSS高防,建議固傷/百分比傷害。',teams:[
-   {tl:'固傷隊',us:[
-     ['Veromos','淨化','絕望/意志'],
-     ['Theomars','無視抗性輸出','暴走/刀刃'],
-     ['Bernard','回能','迅速/集中'],
-     ['Chasun','奶+回能','意志/迅速']]}]},
- {n:'元素地下城(火/風/水/光/暗 精髓)',sub:'進階素材(精髓)來源,難度低。任意屬性優勢隊即可穩過。',teams:[
-   {tl:'通用清怪隊',us:[
-     ['Lushen','範圍斬殺(光/暗皆有)','刀刃/激怒'],
-     ['Veromos','淨化+持續','絕望/意志'],
-     ['Bernard','回能','迅速/集中'],
-     ['Colleen','奶+吸血','意志/吸血']]}]},
- {n:'次元洞 · 異界巨龍 (火 B2/B5)',sub:'次元洞素材/附魔寶石/魔石。BOSS吃「水」屬性優勢,兩側水晶需優先擊破。',teams:[
-   {tl:'水隊 (打火龍)',us:[
-     ['Sigmarus','冰凍+輸出','刀刃/激怒'],
-     ['Tetra','破防','迅速/集中'],
-     ['Colleen','奶+吸血','意志/吸血'],
-     ['Mikene','回能+免疫','意志/迅速'],
-     ['Govliet','水晶擊破/輸出','暴走/刀刃']]}]},
- {n:'次元洞 · 異界巨龍 (水 B2/B5)',sub:'BOSS吃「風」屬性優勢。需破防+持續輸出+抗控。',teams:[
-   {tl:'風隊 (打水龍)',us:[
-     ['Baretta','破防+持續','絕望/意志'],
-     ['Kona','破防','迅速/集中'],
-     ['Wind Homunculus','固傷/水晶','暴走/刀刃'],
-     ['Hemos','奶+免疫','意志/迅速'],
-     ['Lushen','斬殺','刀刃/激怒']]}]},
- {n:'次元洞 · 異界巨龍 (風 B2/B5)',sub:'BOSS吃「火」屬性優勢。以火隊多段快速擊破水晶。',teams:[
-   {tl:'火隊 (打風龍)',us:[
-     ['Tesarion','多段+灼燒','暴走/刀刃'],
-     ['Sath','破防+持續','絕望/意志'],
-     ['Fire Homunculus','固傷/水晶','暴走/刀刃'],
-     ['Chandra','控場','絕望/意志'],
-     ['Bernard','回能','迅速/集中']]}]},
- {n:'異界縫隙 R5 (團隊副本)',sub:'需高DPS在時限內擊破。屬性優勢+破防+回能+奶,分工輸出。',teams:[
-   {tl:'綜合輸出隊',us:[
-     ['Galleon','破防+攻buff','迅速/意志'],
-     ['Verdehile','爆擊回能','暴走/刀刃'],
-     ['Katarina','主力輸出','暴走/刀刃'],
-     ['Chasun','奶+回能','意志/迅速'],
-     ['Theomars','無視抗性','暴走/刀刃']]}]},
- {n:'世界王 Worldboss',sub:'看總戰力/屬性覆蓋,愈多高星覆蓋各屬愈高分。帶回能+多段。',teams:[
-   {tl:'高分速刷',us:[
-     ['Bernard','回能','迅速/集中'],
-     ['Verdehile','爆擊回能','暴走/刀刃'],
-     ['Lushen','範圍斬殺','刀刃/激怒'],
-     ['Megan','攻buff+回能','迅速/集中'],
-     ['Spectra','多段','暴走/刀刃']]}]}
+ {n:t('dungeonGB12'),sub:t('dungeonGB12Desc'),teams:[
+   {tl:t('teamStable'),us:[
+     ['Veromos',t('roleDefBreakContCleanse'),t('despair')+'/'+t('will')],
+     ['Bernard',t('roleATBSpdBuff'),t('swift')+'/'+t('focus')],
+     ['Sabrina',t('roleAoEDefBreak'),t('blade')+'/'+t('focus')],
+     ['Sigmarus',t('roleFreezeDmg'),t('blade')+'/'+t('fatal')],
+     ['Loren',t('roleMultiHitSlow'),t('despair')+'/'+t('blade')]]},
+   {tl:t('teamHighSpeed'),us:[
+     ['Bernard',t('roleATB'),t('swift')+'/'+t('focus')],
+     ['Galleon',t('roleDefBreakAtkBuff'),t('swift')+'/'+t('focus')],
+     ['Verdehile',t('roleCritATB'),t('violent')+'/'+t('blade')],
+      ['Lushen',t('roleNuke'),t('blade')+'/'+t('fatal')]]}]},
+  {n:t('dungeonDB12'),sub:t('dungeonDB12Desc'),teams:[
+    {tl:t('teamGeneral'),us:[
+      ['Veromos',t('roleCleanseCont'),t('despair')+'/'+t('will')],
+      ['Galleon',t('roleDefBreakAtkBuff'),t('swift')+'/'+t('will')],
+      ['Bernard',t('roleATB'),t('swift')+'/'+t('focus')],
+      ['Sigmarus',t('roleFreezeCC'),t('blade')+'/'+t('fatal')],
+      ['Lushen',t('roleAoENuke'),t('blade')+'/'+t('fatal')]]},
+    {tl:t('teamDoubleDef'),us:[
+      ['Chasun',t('roleHealATB'),t('will')+'/'+t('swift')],
+      ['Sabrina',t('roleAoEDefBreak'),t('blade')+'/'+t('focus')],
+      ['Katarina',t('roleHighDmg'),t('violent')+'/'+t('blade')],
+      ['Fran',t('roleImmuneHeal'),t('will')+'/'+t('swift')]]}]},
+  {n:t('dungeonNB12'),sub:t('dungeonNB12Desc'),teams:[
+    {tl:t('teamGeneral'),us:[
+      ['Veromos',t('roleCleanseCont'),t('despair')+'/'+t('will')],
+      ['Bernard',t('roleATB'),t('swift')+'/'+t('focus')],
+      ['Sabrina',t('roleCleanseStun'),t('blade')+'/'+t('focus')],
+      ['Sigmarus',t('roleFreezeDmg'),t('blade')+'/'+t('fatal')],
+      ['Loren',t('roleMultiHitSlow'),t('despair')+'/'+t('blade')]]}]},
+  {n:t('dungeonSF10'),sub:t('dungeonSF10Desc'),teams:[
+    {tl:t('teamMultiHit'),us:[
+      ['Veromos',t('roleCleanseDefBreak'),t('despair')+'/'+t('will')],
+      ['Bernard',t('roleATB'),t('swift')+'/'+t('focus')],
+      ['Tesarion',t('roleMultiHitBrand'),t('violent')+'/'+t('blade')],
+      ['Sath',t('roleDefBreakCont'),t('despair')+'/'+t('will')]]}]},
+  {n:t('dungeonPC10'),sub:t('dungeonPC10Desc'),teams:[
+    {tl:t('teamFixedDmg'),us:[
+      ['Veromos',t('roleCleanseCont'),t('despair')+'/'+t('will')],
+      ['Theomars',t('roleIgnoreRes'),t('violent')+'/'+t('blade')],
+      ['Bernard',t('roleATB'),t('swift')+'/'+t('focus')],
+      ['Chasun',t('roleHealATB'),t('will')+'/'+t('swift')]]}]},
+  {n:t('dungeonElement'),sub:t('dungeonElementDesc'),teams:[
+    {tl:t('teamWaveClear'),us:[
+      ['Lushen',t('roleAoENuke'),t('blade')+'/'+t('fatal')],
+      ['Veromos',t('roleCleanseCont'),t('despair')+'/'+t('will')],
+      ['Bernard',t('roleATB'),t('swift')+'/'+t('focus')],
+      ['Colleen',t('roleHealLifesteal'),t('will')+'/'+t('vampire')]]}]},
+ {n:t('dungeonRiftFire'),sub:t('dungeonRiftFireDesc'),teams:[
+   {tl:t('teamWater'),us:[
+     ['Sigmarus',t('roleFreezeDmg'),t('blade')+'/'+t('fatal')],
+     ['Tetra',t('roleAoEDefBreak'),t('swift')+'/'+t('focus')],
+     ['Colleen',t('roleHealLifesteal'),t('will')+'/'+t('vampire')],
+     ['Mikene',t('roleATBImmune'),t('will')+'/'+t('swift')],
+      ['Govliet',t('roleCrystalBreak'),t('violent')+'/'+t('blade')]]}]},
+  {n:t('dungeonRiftWater'),sub:t('dungeonRiftWaterDesc'),teams:[
+    {tl:t('teamWind'),us:[
+      ['Baretta',t('roleDefBreakCont'),t('despair')+'/'+t('will')],
+      ['Kona',t('roleAoEDefBreak'),t('swift')+'/'+t('focus')],
+      ['Wind Homunculus',t('roleFixedCrystal'),t('violent')+'/'+t('blade')],
+      ['Hemos',t('roleImmuneHeal'),t('will')+'/'+t('swift')],
+      ['Lushen',t('roleNuke'),t('blade')+'/'+t('fatal')]]}]},
+ {n:t('dungeonRiftWind'),sub:t('dungeonRiftWindDesc'),teams:[
+   {tl:t('teamFire'),us:[
+     ['Tesarion',t('roleMultiHitBrand'),t('violent')+'/'+t('blade')],
+     ['Sath',t('roleDefBreakCont'),t('despair')+'/'+t('will')],
+     ['Fire Homunculus',t('roleFixedCrystal'),t('violent')+'/'+t('blade')],
+     ['Chandra',t('roleCC'),t('despair')+'/'+t('will')],
+      ['Bernard',t('roleATB'),t('swift')+'/'+t('focus')]]}]},
+  {n:t('dungeonR5'),sub:t('dungeonR5Desc'),teams:[
+    {tl:t('teamMixed'),us:[
+      ['Galleon',t('roleDefBreakAtkBuff'),t('swift')+'/'+t('will')],
+      ['Verdehile',t('roleCritATB'),t('violent')+'/'+t('blade')],
+      ['Katarina',t('roleMainDPS'),t('violent')+'/'+t('blade')],
+      ['Chasun',t('roleHealATB'),t('will')+'/'+t('swift')],
+      ['Theomars',t('roleIgnoreResShort'),t('violent')+'/'+t('blade')]]}]},
+  {n:t('dungeonWorldBoss'),sub:t('dungeonWorldBossDesc'),teams:[
+    {tl:t('teamHighScore'),us:[
+      ['Bernard',t('roleATB'),t('swift')+'/'+t('focus')],
+      ['Verdehile',t('roleCritATB'),t('violent')+'/'+t('blade')],
+      ['Lushen',t('roleAoENuke'),t('blade')+'/'+t('fatal')],
+      ['Megan',t('roleATKBuffATB'),t('swift')+'/'+t('focus')],
+      ['Spectra',t('roleMultiHitShort'),t('violent')+'/'+t('blade')]]}]}
 ];
 // 地下城卡片內就地展開自動配裝（薄包裝：共用 renderBuildDetail）
 function renderDFit(sel,p,s4,s2){
-  const d=renderBuildDetail(sel,p,{emptyTxt:'缺符合套裝的符文'});
-  const head=`<div class="muted" style="margin:4px 0 6px">目標 <b>${s4}(4)+${s2}(2)</b>　達成 <b style="color:var(--good)">${d.setTxt}</b>　平均效率 <b class="${effCls(d.avgEff)}">${d.avgEff.toFixed(1)}%</b>（湊 ${d.n}/6）</div>`;
+  const d=renderBuildDetail(sel,p,{emptyTxt:t('noMatchRune2')});
+  const head=`<div class="muted" style="margin:4px 0 6px">${t('target')} <b>${s4}(4)+${s2}(2)</b>　${t('achieved')} <b style="color:var(--good)">${d.setTxt}</b>　${t('avgEff')} <b class="${effCls(d.avgEff)}">${d.avgEff.toFixed(1)}%</b>（${t('slotsFilled')} ${d.n}/6）</div>`;
   const stat=d.fin
-    ? d.finGridHtml+'<small class="note">最終值＝基礎體質×(1＋屬性%＋套裝%)＋固定值，未計領導技/塔/神器/銘刻。</small>'
-    : '<small class="note muted">查無此魔靈體質基礎資料，無法算最終數值。</small>';
+    ? d.finGridHtml+`<small class="note">${t('finalStatsNoteShort')}</small>`
+    : `<small class="note muted">${t('noBaseDataForUnit3')}</small>`;
   return head+d.slotsHtml+stat;
 }
 window.dFit=function(btn,en,setStr){
   const box=btn.closest('.unitwrap').querySelector('.dfitbox');
-  if(box.dataset.open==='1'){box.style.display='none';box.dataset.open='0';btn.textContent='自動配裝';return;}
+  if(box.dataset.open==='1'){box.style.display='none';box.dataset.open='0';btn.textContent=t('autoBuild');return;}
   const u=enToUnit[en];
-  if(!u){box.innerHTML='<span class="noown">查無此魔靈資料</span>';}
+  if(!u){box.innerHTML=`<span class="noown">${t('notFound')}</span>`;}
   else{const [s4,s2]=parseSetPair(setStr); const {sel,p}=solveFit(u.id,s4,s2,{2:'',4:'',6:''},false); box.innerHTML=renderDFit(sel,p,s4,s2);}
-  box.style.display='block';box.dataset.open='1';btn.textContent='收合配裝';
+  box.style.display='block';box.dataset.open='1';btn.textContent=t('collapseBuild');
 };
 // 地下城下拉選單填入
-$('#dungSel').innerHTML='<option value="">— 選擇地下城 —</option>'+DUNGEONS.map((d,i)=>`<option value="${i}">${d.n}</option>`).join('');
+$('#dungSel').innerHTML=`<option value="">— ${t('selectDungeon')} —</option>`+DUNGEONS.map((d,i)=>`<option value="${i}">${d.n}</option>`).join('');
 function dungRowsHtml(t,ownedOnly){
   return t.us.filter(u=>!ownedOnly||ownedNames.has(u[0])).map(u=>{
     let has=ownedNames.has(u[0]);
     let disp=has&&enToZh[u[0]]?enToZh[u[0]]:u[0];
     let ic=unitIcon(u[0],has&&enToUnit[u[0]]?enToUnit[u[0]].mid:null,has?'':'off');
-    let btn=has?`<button class="dfitbtn" onclick="dFit(this,'${u[0].replace(/'/g,"\\'")}','${u[2]}')">自動配裝</button>`:'';
+    let btn=has?`<button class="dfitbtn" onclick="dFit(this,'${u[0].replace(/'/g,"\\'")}','${u[2]}')">${t('autoBuild')}</button>`:'';
     return `<div class="unitwrap"><div class="unitrow"><span class="uname ${has?'own':'noown'}" title="${disp}">${ic||disp}${has?'<span class="uok">✓</span>':''}</span>
       <span class="rl">${u[1]} <span class="setbadge">${u[2]}</span>${btn}</span></div><div class="dfitbox" style="display:none"></div></div>`;
   }).join('');
 }
 function renderDungRef(){
   const iv=$('#dungSel').value, ownedOnly=$('#dOwnedOnly').checked;
-  if(iv===''){ $('#dungRef').innerHTML='<span class="muted">從上方選一個地下城</span>'; return; }
+  if(iv===''){ $('#dungRef').innerHTML=`<span class="muted">${t('selectDungeon')}</span>`; return; }
   const d=DUNGEONS[+iv];
   let teams=d.teams.map((t,ti)=>{
     let owned=t.us.filter(u=>ownedNames.has(u[0])).length;
-    let load=owned?`<button class="btn2 dungLoad" onclick="dungLoad(${+iv},${ti})" type="button" title="把此隊已擁有角色加入上方配裝清單">＋ 帶入配裝清單</button>`:'';
-    return `<div class="team"><div class="tl">${t.tl} <span class="muted">(擁有 ${owned}/${t.us.length})</span> ${load}</div>${dungRowsHtml(t,ownedOnly)}</div>`;
+    let load=owned?`<button class="btn2 dungLoad" onclick="dungLoad(${+iv},${ti})" type="button" title="${t('importToListTitle')}">${t('importToList')}</button>`:'';
+    return `<div class="team"><div class="tl">${t.tl} <span class="muted">(${t('owned')} ${owned}/${t.us.length})</span> ${load}</div>${dungRowsHtml(t,ownedOnly)}</div>`;
   }).join('');
   $('#dungRef').innerHTML=`<div class="card dcard"><h3>${d.n}</h3><div class="sub">${d.sub}</div>${teams}</div>`;
 }
@@ -22910,8 +23649,8 @@ window.dungLoad=function(di,ti){
 
 // ---------- 符文自動配裝 ----------
 // 4件套/2件套(官方繁中)：固定寫死全部套裝選項，不依實際符文資料產生(避免沒有該符文就不顯示)
-const FOUR4=['暴走','迅速','激怒','猛攻','絕望','吸血'];
-const TWO2=['祝福','守護','刀刃','集中','忍耐','應報','意志','保護','反擊','鬥志','決心','剛毅','命中','韌性','封印','破壞']; // 無形非2件套(最多1顆,補位用)，改由「含無形符文」勾選框處理
+const FOUR4=['Violent','Swift','Fatal','Strengthen','Despair','Vampire'];
+const TWO2=['Energy','Guard','Blade','Focus','Endure','Revenge','Will','Shield','Nemesis','Determination','Resolve','Tolerance','Accuracy','Resilience','Seal','Destroy']; // 無形非2件套(最多1顆,補位用)，改由「含無形符文」勾選框處理
 // 各下拉的選項字串(共用；供每一列魔靈設定塊填入)
 const fUnitData=UNITS.filter(u=>u.s>=5).sort((a,b)=>a.n.localeCompare(b.n)).map(u=>({id:u.id,label:`${u.n} (${u.at}${u.s}★)`,ic:unitIcon(u.en||u.n,u.mid,'')}));
 // 依選定的怪物 id 在搜尋框左側顯示魔靈小圖(未選則清空隱藏)
@@ -22924,7 +23663,7 @@ function initFUnit(row){
   const upd=()=>{ [...list.children].forEach((el,i)=>el.classList.toggle('active',i===active)); const a=list.children[active]; if(a&&a.scrollIntoView)a.scrollIntoView({block:'nearest'}); };
   const render=q=>{ q=(q||'').trim().toLowerCase();
     items=q?fUnitData.filter(d=>d.label.toLowerCase().includes(q)):fUnitData; active=-1;
-    list.innerHTML=items.length?items.map((d,i)=>`<div class="fUopt" data-i="${i}">${d.ic||''}${d.label}</div>`).join(''):'<div class="fUnone">查無怪物</div>';
+    list.innerHTML=items.length?items.map((d,i)=>`<div class="fUopt" data-i="${i}">${d.ic||''}${d.label}</div>`).join(''):`<div class="fUnone">${t('notFound')}</div>`;
   };
   const pick=d=>{ hid.value=d.id; inp.value=d.label; setFUnitIco(row,d.id); box.classList.remove('open'); };
   inp.addEventListener('focus',()=>{ render(inp.value); box.classList.add('open'); });
@@ -22938,8 +23677,8 @@ function initFUnit(row){
 }
 // 下拉外點收合：全域委派一次即可（經 addDocListener 登記，renderAll 重跑會先清掉），不必每列各掛一個
 addDocListener('mousedown',e=>{ document.querySelectorAll('.fUnitBox.open').forEach(b=>{ if(!b.contains(e.target))b.classList.remove('open'); }); });
-const fSet4OptsHtml='<option value="">無（不需要四件套）</option>'+FOUR4.map(s=>`<option>${s}</option>`).join('');
-const twoNamesHtml='<option value="">無</option>'+TWO2.map(s=>`<option>${s}</option>`).join('');
+const fSet4OptsHtml=`<option value="">${t('noneNoSet')}</option>`+FOUR4.map(s=>`<option>${s}</option>`).join('');
+const twoNamesHtml=`<option value="">${t('none')}</option>`+TWO2.map(s=>`<option>${s}</option>`).join('');
 const mainOpts={2:['ATK%','DEF%','HP%','SPD'],4:['ATK%','DEF%','HP%','CRate%','CDmg%'],6:['ATK%','DEF%','HP%','RES%','ACC%']};
 // 依四件套是否選用，限制某列二件套可用組數(四件套佔4洞→僅剩1組二件套；無→最多3組)，即時擋超額
 function fSyncSets(row){
@@ -22972,11 +23711,11 @@ function teamBonusOf(sidCount){
 }
 // 效果類套裝(依 set_id)：p=單套發動機率(無=非機率型)、pc=成套件數、d=精簡說明。用於詳細彈窗精簡顯示，不計入體質。
 const SET_EFFECT={
-  10:{n:'絕望',p:0.25,pc:2,d:'暈眩'},13:{n:'暴走',p:0.22,pc:4,d:'追加回合'},
-  17:{n:'反擊',p:0.15,pc:2,d:'反擊'},24:{n:'封印',p:0.25,pc:2,d:'封印'},
-  11:{n:'吸血',pc:4,d:'吸血(傷害35%回復)'},14:{n:'應報',pc:2,d:'受7%HP傷→+4%攻擊條'},
-  15:{n:'意志',pc:2,d:'免疫1回合'},18:{n:'破壞',pc:2,d:'破壞HP上限(傷害30%,最多-60%)'},
-  16:{n:'保護',pc:2,d:'15%HP護盾3回合(全隊含自己)'}};
+  10:{n:'Despair',p:0.25,pc:2,d:'Stun'},13:{n:'Violent',p:0.22,pc:4,d:'Additional Turn'},
+  17:{n:'Revenge',p:0.15,pc:2,d:'Counter'},24:{n:'Seal',p:0.25,pc:2,d:'Seal'},
+  11:{n:'Vampire',pc:4,d:'Lifesteal (35% dmg healed)'},14:{n:'Reflect',pc:2,d:'7% HP dmg → +4% ATK bar'},
+  15:{n:'Will',pc:2,d:'Immunity 1 turn'},18:{n:'Destroy',pc:2,d:'Destroy HP cap (30% dmg, max -60%)'},
+  16:{n:'Shield',pc:2,d:'15% HP shield 3 turns (all team)'}};
 // 由 mid 的體質 + 符文加總(tot) + 套裝件數(sidCount) 算最終數值
 // teamBonus(可選)：跨隊全隊型套裝加成{st:%}。給定時，全隊型套裝改由 teamBonus 統一計入(避免與自身 sidCount 重複)；
 // 不給時(單隻彈窗/單隻配裝)則照舊由自身 sidCount 計算全隊型套(只算自己裝的)。
@@ -23008,30 +23747,30 @@ function effectSetHtml(sidCount,fin){
     const c=Math.floor(sidCount[sid]/e.pc); if(c<1)continue;   // 成套組數
     let tag;
     if(e.p!=null){ const pr=Math.round((1-Math.pow(1-e.p,c))*100); tag=`${e.n} <b>${pr}%</b>`; } // 至少一次機率
-    else if(+sid===16&&fin){ tag=`${e.n} <b>${Math.round(fin.hp*0.15)}</b> 護盾`; }               // 保護：15%最終HP護盾值
+    else if(+sid===16&&fin){ tag=`${e.n} <b>${Math.round(fin.hp*0.15)}</b> ${t('shield')}`; }               // Shield: 15% final HP shield value
     else tag=e.n;
     items.push(`<span class="fxset" title="${e.d}">${tag}</span>`);
   }
   if(!items.length)return '';
-  return `<div class="msetfx">效果套裝：${items.join('')}</div>`;
+  return `<div class="msetfx">${t('setEffects')}: ${items.join('')}</div>`;
 }
 // 新條件用的屬性定義：對應 computeFinal 的最終欄位(fk)與 BASE_STATS 欄位(bk)
 const STAT_KEYS=[
-  {lab:'體力',fk:'hp',pct:'HP%',flat:'HP',bk:'h',mult:true},
-  {lab:'攻擊',fk:'atk',pct:'ATK%',flat:'ATK',bk:'a',mult:true},
-  {lab:'防禦',fk:'def',pct:'DEF%',flat:'DEF',bk:'d',mult:true},
-  {lab:'速度',fk:'spd',pct:null,flat:'SPD',bk:'s',mult:false},
-  {lab:'暴率%',fk:'cr',pct:'CRate%',flat:null,bk:'cr',mult:false},
-  {lab:'暴傷%',fk:'cd',pct:'CDmg%',flat:null,bk:'cd',mult:false},
-  {lab:'抵抗%',fk:'re',pct:'RES%',flat:null,bk:'re',mult:false},
-  {lab:'命中%',fk:'ac',pct:'ACC%',flat:null,bk:'ac',mult:false},
+  {lab:t('statHP'),fk:'hp',pct:'HP%',flat:'HP',bk:'h',mult:true},
+  {lab:t('statATK'),fk:'atk',pct:'ATK%',flat:'ATK',bk:'a',mult:true},
+  {lab:t('statDEF'),fk:'def',pct:'DEF%',flat:'DEF',bk:'d',mult:true},
+  {lab:t('statSPD'),fk:'spd',pct:null,flat:'SPD',bk:'s',mult:false},
+  {lab:t('statCR'),fk:'cr',pct:'CRate%',flat:null,bk:'cr',mult:false},
+  {lab:t('statCD'),fk:'cd',pct:'CDmg%',flat:null,bk:'cd',mult:false},
+  {lab:t('statRES'),fk:'re',pct:'RES%',flat:null,bk:'re',mult:false},
+  {lab:t('statACC'),fk:'ac',pct:'ACC%',flat:null,bk:'ac',mult:false},
 ];
 const statByFk=fk=>STAT_KEYS.find(d=>d.fk===fk);
 // 複合目標屬性（非線性：需整組 plan 過 computeFinal 才有值；只供「優先屬性」選用，門檻不適用）
 const COMP_KEYS=[
-  {lab:'有效輸出EDPS',fk:'edps',parts:['atk','cr','cd']},
-  {lab:'有效輸出EDEF',fk:'edef',parts:['def','cr','cd']},
-  {lab:'有效血量EHP',fk:'ehp',parts:['hp','def']},
+  {lab:t('statEDPS'),fk:'edps',parts:['atk','cr','cd']},
+  {lab:t('statEDEF'),fk:'edef',parts:['def','cr','cd']},
+  {lab:t('statEHP'),fk:'ehp',parts:['hp','def']},
 ];
 const compByFk=fk=>COMP_KEYS.find(d=>d.fk===fk);
 const statLabOf=fk=>{const d=statByFk(fk)||compByFk(fk);return d?d.lab:fk;};
@@ -23281,7 +24020,7 @@ let FIT_MERGE=false;
 function toggleFitMerge(){
   FIT_MERGE=!FIT_MERGE;
   $$('.fitsub').forEach(el=>{ el.innerHTML=fmtSub((el.dataset.sub||'').replace(/&quot;/g,'"'),FIT_MERGE); });
-  $$('.fitMergeBtn').forEach(b=>b.textContent=FIT_MERGE?'磨刀：已加總 ⇄ 還原':'磨刀：分開 ⇄ 加總');
+  $$('.fitMergeBtn').forEach(b=>b.textContent=FIT_MERGE?t('grindMergeBtn'):t('grindSplitBtn'));
 }
 // ── 共用渲染核心：由 sel+p(+opts) 導出 6洞明細/套裝統計/加成合計/最終體質 各段 HTML ──
 // 供 renderDFit(地下城就地配裝)與 renderFitCards(fit分頁)共用，避免三處重複。
@@ -23294,32 +24033,32 @@ function renderBuildDetail(sel,p,opts){
   let totalEff=0,n=0,slotsHtml='';
   for(let sl=1;sl<=6;sl++){
     const r=p[sl];
-    const btns=opts.editable?`<span class="slotbtns"><button type="button" class="slotbtn" data-act="pick" data-mi="${opts.monIdx}" data-sl="${sl}" title="更換符文">✎</button><button type="button" class="slotbtn" data-act="del" data-mi="${opts.monIdx}" data-sl="${sl}" title="移除符文"${r?'':' disabled'}>✕</button></span>`:'';
+    const btns=opts.editable?`<span class="slotbtns"><button type="button" class="slotbtn" data-act="pick" data-mi="${opts.monIdx}" data-sl="${sl}" title="${t('swapRuneLabel')}">✎</button><button type="button" class="slotbtn" data-act="del" data-mi="${opts.monIdx}" data-sl="${sl}" title="${t('removeRune')}"${r?'':' disabled'}>✕</button></span>`:'';
     if(r){totalEff+=r.ef;n++;
-      const loc=r.ow?`<span class="own">${r.ow}</span>`:'<span class="muted">倉庫</span>';
-      slotsHtml+=`<div class="slotline"><span><b>${sl}洞</b> <span class="setbadge">${r.set}</span> ${r.m}${r.pf?` <span class="muted">前 ${r.pf}</span>`:''}　<span class="muted fitsub" data-sub="${(r.sub||'').replace(/"/g,'&quot;')}">${fmtSub(r.sub,FIT_MERGE)}</span></span><span>${r.anc?'<span class="anc">A</span> ':''}<b class="${effCls(r.ef)}">${r.ef}%</b> ${loc}${btns}</span></div>`;
+      const loc=r.ow?`<span class="own">${r.ow}</span>`:`<span class="muted">${t('storageShort')}</span>`;
+      slotsHtml+=`<div class="slotline"><span><b>${sl}${t('slotLabel')}</b> <span class="setbadge">${r.set}</span> ${r.m}${r.pf?` <span class="muted">${t('prefix')} ${r.pf}</span>`:''}　<span class="muted fitsub" data-sub="${(r.sub||'').replace(/"/g,'&quot;')}">${fmtSub(r.sub,FIT_MERGE)}</span></span><span>${r.anc?'<span class="anc">A</span> ':''}<b class="${effCls(r.ef)}">${r.ef}%</b> ${loc}${btns}</span></div>`;
     }else{
       const miss=opts.missing&&opts.missing[sl];
-      slotsHtml+=`<div class="slotline"><span><b>${sl}洞</b> <span class="noown">${miss?`符文已消失（原：${miss}）`:(opts.emptyTxt||'找不到符合條件的符文')}</span></span><span>${btns}</span></div>`;
+      slotsHtml+=`<div class="slotline"><span><b>${sl}${t('slotLabel')}</b> <span class="noown">${miss?`${t('runeGone')} ${miss}`:(opts.emptyTxt||t('noMatchFound'))}</span></span><span>${btns}</span></div>`;
     }
   }
   const avgEff=totalEff/Math.max(n,1);
   // 套裝統計
   const setCount={}; Object.values(p).forEach(r=>{if(r)setCount[r.set]=(setCount[r.set]||0)+1;});
   let setTxt=Object.entries(setCount).map(([k,v])=>`${k}×${v}`).join('　')||'—';
-  if(opts.intFill&&opts.intFill.set)setTxt+=`　<span class="fok">（無形補位→${opts.intFill.set}視同+1件）</span>`;
+  if(opts.intFill&&opts.intFill.set)setTxt+=`　<span class="fok">${t('intRuneFillNote').replace('#SET',opts.intFill.set)}</span>`;
   // 加成合計(主屬+前綴+副屬含磨刀)
   const tot={}; Object.values(p).forEach(r=>{if(!r)return;const st=parseStats(r);for(const k in st)tot[k]=(tot[k]||0)+st[k];});
   const order=['ATK%','ATK','HP%','HP','DEF%','DEF','SPD','CRate%','CDmg%','RES%','ACC%'];
   const statsumHtml='<div class="statsum">'+order.filter(k=>tot[k]).map(k=>`<div>${k} <b>+${tot[k]}</b></div>`).join('')+'</div>'+
-    '<small class="note">上方為六件符文主屬+前綴+副屬的加總(不含怪物基礎值與套裝%效果)。</small>';
+    `<small class="note">${t('runeSumNote')}</small>`;
   // 最終體質(含無形補位視同+1件、全隊型套裝加成)
   const sidCount={}; Object.values(p).forEach(r=>{if(r&&r.sid!=null)sidCount[r.sid]=(sidCount[r.sid]||0)+1;});
   if(opts.intFill&&opts.intFill.sid!=null)sidCount[opts.intFill.sid]=(sidCount[opts.intFill.sid]||0)+1;
   const fin=sel?computeFinal(sel.mid,tot,sidCount,opts.teamBonus):null;
   let finGridHtml='';
   if(fin){
-    const rows=[['HP','hp','h'],['ATK','atk','a'],['DEF','def','d'],['SPD','spd','s'],['暴率%','cr','cr'],['暴傷%','cd','cd'],['抵抗%','re','re'],['命中%','ac','ac']];
+    const rows=[['HP','hp','h'],['ATK','atk','a'],['DEF','def','d'],['SPD','spd','s'],[t('critRate')+'%','cr','cr'],[t('critDmg')+'%','cd','cd'],[t(' resist')+'%','re','re'],[t('accuracy')+'%','ac','ac']];
     finGridHtml='<div class="fingrid">'+rows.map(([lab,fk,bk])=>{const bv=fin.base[bk],fv=fin[fk],up=fv-bv;const upTxt=up>0?`<span class="fup">+${up}</span>`:'';return `<div class="fcell"><span class="flab">${lab}</span><span class="fbase">${bv}</span><span class="farr">→</span><span class="ffin">${fv}</span>${upTxt}</div>`;}).join('')+'</div>';
   }
   return {slotsHtml,avgEff,n,setCount,setTxt,tot,sidCount,statsumHtml,fin,finGridHtml};
@@ -23338,9 +24077,9 @@ const STAT_OPT_HTML=STAT_KEYS.map(d=>`<option value="${d.fk}">${d.lab}</option>`
 function fAddCond(row,fk,val,max){
   const sp=document.createElement('span'); sp.className='fcond';
   sp.innerHTML=`<select class="fcondStat">${STAT_OPT_HTML}</select>`
-    +`<span class="muted">≥</span><input type="number" class="fcondVal" style="width:78px" title="下限；留空＝不限制">`
-    +`<span class="muted">≤</span><input type="number" class="fcondMax" style="width:78px" title="上限；留空＝不限制">`
-    +`<button type="button" class="fcondDel" title="刪除">✕</button>`;
+    +`<span class="muted">≥</span><input type="number" class="fcondVal" style="width:78px" title="${t('minPlaceholder')}">`
+    +`<span class="muted">≤</span><input type="number" class="fcondMax" style="width:78px" title="${t('maxPlaceholder')}">`
+    +`<button type="button" class="fcondDel" title="${t('delete')}">✕</button>`;
   if(fk)sp.querySelector('.fcondStat').value=fk;
   if(val!=null)sp.querySelector('.fcondVal').value=val;
   if(max!=null)sp.querySelector('.fcondMax').value=max;
@@ -23361,7 +24100,7 @@ const PRIO_OPT_HTML=STAT_OPT_HTML+COMP_KEYS.map(d=>`<option value="${d.fk}">${d.
 function fRenumPrios(row){ row.querySelectorAll('.fPrios .fprioN').forEach((el,i)=>el.textContent=(i+1)+'.'); }
 function fAddPrio(row,fk){
   const sp=document.createElement('span'); sp.className='fcond fprio';
-  sp.innerHTML=`<b class="fprioN muted"></b><select class="fprioStat">${PRIO_OPT_HTML}</select><button type="button" class="fprioDel" title="刪除">✕</button>`;
+  sp.innerHTML=`<b class="fprioN muted"></b><select class="fprioStat">${PRIO_OPT_HTML}</select><button type="button" class="fprioDel" title="${t('delete')}">✕</button>`;
   if(fk)sp.querySelector('.fprioStat').value=fk;
   sp.querySelector('.fprioDel').onclick=()=>{sp.remove();fRenumPrios(row);};
   row.querySelector('.fPrios').appendChild(sp); fRenumPrios(row);
@@ -23372,12 +24111,12 @@ function fReadPrios(row){
     .filter(fk=>{ if(!fk||seen.has(fk))return false; seen.add(fk); return true; });
 }
 // ---- 每列魔靈設定塊的建立與讀取 ----
-function fRenumber(){ $$('#fMons .fMonRow').forEach((row,i)=>{ const t=row.querySelector('.fMonTag'); if(t)t.textContent='魔靈 '+(i+1); }); }
+function fRenumber(){ $$('#fMons .fMonRow').forEach((row,i)=>{ const t=row.querySelector('.fMonTag'); if(t)t.textContent=t('monsterN')+(i+1); }); }
 function initMonRow(row){
   initFUnit(row);
   const s4=row.querySelector('.fSet4'); s4.innerHTML=fSet4OptsHtml; s4.value=FOUR4[0];
   ['.fSet2','.fSet2b','.fSet2c'].forEach(c=>row.querySelector(c).innerHTML=twoNamesHtml);
-  [2,4,6].forEach(s=>row.querySelector('.fS'+s).innerHTML='<option value="">不限</option>'+mainOpts[s].map(m=>`<option>${m}</option>`).join(''));
+  [2,4,6].forEach(s=>row.querySelector('.fS'+s).innerHTML=`<option value="">${t('anySet')}</option>`+mainOpts[s].map(m=>`<option>${m}</option>`).join(''));
   s4.addEventListener('change',()=>fSyncSets(row)); fSyncSets(row);
   row.querySelector('.fAddPrio').onclick=()=>fAddPrio(row);
   row.querySelector('.fAddCond').onclick=()=>fAddCond(row);
@@ -23401,11 +24140,11 @@ function readMonRow(row){
 $('#fAddMon').onclick=()=>addMonRow();
 $('#fClear').onclick=async()=>{
   if(FIT_STATE.list.length&&fitIsDirty()){
-    if(!await uxConfirm('目前清單有尚未儲存的變更，清空後將無法找回。確定清空？',{danger:true,okText:'清空'}))return;
+    if(!await uxConfirm(t('unsavedClear'),{danger:true,okText:t('clearBtnConfirm')}))return;
   }
   document.getElementById('fMons').innerHTML='';
   FIT_STATE.list=[]; FIT_STATE.expanded=new Set();
-  $('#fResults').innerHTML='<span class="muted">選好條件後按「計算最佳配裝」</span>';
+  $('#fResults').innerHTML=`<span class="muted">${t('placeholderCalc')}</span>`;
   fitMarkSynced();
 };
 $('#fUndo').onclick=()=>{
@@ -23413,11 +24152,11 @@ $('#fUndo').onclick=()=>{
   FIT_STATE.list=JSON.parse(it.snap).map(m=>({uid:m.uid,cfg:m.cfg,plan:m.plan||{},runeDesc:m.runeDesc||{},intFill:m.intFill||null,locked:!!m.locked,diag:null}));
   renderTeamPanel();
   fitUndoBtnSync();
-  uxToast('已復原：'+it.label,'success');
+  uxToast(t('restored')+it.label,'success');
 };
 fitUndoBtnSync();
 document.getElementById('fMons').innerHTML=''; // renderAll 會重跑此段，先清空避免累積
-$('#fResults').innerHTML='<span class="muted">選好條件後按「計算最佳配裝」</span>';
+$('#fResults').innerHTML=`<span class="muted">${t('placeholderCalc')}</span>`;
 // 配裝清單預設空白：由使用者自行「＋ 新增魔靈」或從「地下城參考隊」帶入
 // 由 solveFit 結果 + 該列設定 產生「推薦配裝」與「符文加成合計」兩段 HTML
 // edOpts：透傳給 renderBuildDetail 的 {editable,monIdx,missing}（隊伍面板展開編輯用）
@@ -23427,57 +24166,57 @@ function renderFitCards(solved,cfg,teamBonus,edOpts){
   const d=renderBuildDetail(sel,p,Object.assign({teamBonus,intFill:diag&&diag.intFill},edOpts||{}));
   const selIc=sel?unitIcon(sel.en||sel.n,sel.mid,'big'):'';
   const tgtParts=[]; if(s4)tgtParts.push(`${s4}(4)`); twos.forEach(t=>tgtParts.push(`${t}(2)`));
-  const tgtTxt=tgtParts.length?tgtParts.join(' + '):'不限套裝（自由配）';
-  let html=`<div class="fithead">${selIc}<div><div class="muted">目標：<b>${tgtTxt}</b></div><div class="muted">達成套裝：<b style="color:var(--good)">${d.setTxt}</b></div></div></div>`;
+  const tgtTxt=tgtParts.length?tgtParts.join(' + '):t('anySetFree');
+  let html=`<div class="fithead">${selIc}<div><div class="muted">${t('target')}：<b>${tgtTxt}</b></div><div class="muted">${t('achievedSet')}：<b style="color:var(--good)">${d.setTxt}</b></div></div></div>`;
   // 新條件目標／達標狀態
   if(diag && ((diag.prios&&diag.prios.length) || (diag.thresholds&&diag.thresholds.length) || diag.intFill)){
     let g='';
     if(diag.prios&&diag.prios.length){
-      g+='<div>🎯 優先屬性：'+diag.prios.map((fk,i)=>{
+      g+=`<div>${t('priorityStats')}：`+diag.prios.map((fk,i)=>{
         const lab=statLabOf(fk);
         const fin0=d.fin||diag.fin;
         const v=fin0?compValOf(fk,fin0):null;
-        return `<b>${i+1}.${lab}</b>${v!=null?`（配出 ${v}）`:''}`;
+        return `<b>${i+1}.${lab}</b>${v!=null?` (${t('achieved')} ${v})`:''}`;
       }).join('　')+'</div>';
     }
     if(diag.intFill){
       g+=diag.intFill.set
-        ? `<div style="margin-top:3px">♻ 無形符文：放第 <b>${diag.intFill.sl}</b> 洞，補足 <b>${diag.intFill.set}</b> 套裝缺件</div>`
-        : `<div style="margin-top:3px">♻ 無形符文：放第 <b>${diag.intFill.sl}</b> 洞（自由洞，未補位）</div>`;
+        ? `<div style="margin-top:3px">${t('intRune')}：${t('intRuneSlot')} <b>${diag.intFill.sl}</b>，${t('intRuneFill')} <b>${diag.intFill.set}</b> ${t('intRuneMissing')}</div>`
+        : `<div style="margin-top:3px">${t('intRune')}：${t('intRuneSlot')} <b>${diag.intFill.sl}</b> (${t('freeSlot')})</div>`;
     }
     if(diag.thresholds&&diag.thresholds.length){
-      const rngTxt=t=>[t.min!=null?'≥'+t.min:'',t.max!=null?'≤'+t.max:''].filter(Boolean).join(' 且 ');
-      g+='<div style="margin-top:3px">📋 額外門檻：'+diag.thresholds.map(t=>{
+      const rngTxt=t=>[t.min!=null?'≥'+t.min:'',t.max!=null?'≤'+t.max:''].filter(Boolean).join(' '+t('and')+' ');
+      g+=`<div style="margin-top:3px">${t('extraThresholds')}：`+diag.thresholds.map(t=>{
         const sk=STAT_KEYS.find(x=>x.fk===t.fk), lab=sk?sk.lab:t.fk;
         const v=(d.fin||diag.fin)?(d.fin||diag.fin)[t.fk]:null;
-        if(v==null)return `<span class="fwarn">${lab}${rngTxt(t)}(無基礎值)</span>`;
+        if(v==null)return `<span class="fwarn">${lab}${rngTxt(t)}(${t('noBaseVal')})</span>`;
         const ok=(t.min==null||v>=t.min)&&(t.max==null||v<=t.max);
         return `<span class="${ok?'fok':'fwarn'}">${lab} ${v}／${rngTxt(t)} ${ok?'✓':'✗'}</span>`;
       }).join('　')+'</div>';
     }
-    if(diag.noBaseButCond) g+=`<div class="fwarn" style="margin-top:3px">⚠ 查無此怪物基礎體質(mid ${sel?sel.mid:''})，優先屬性％類／門檻條件無法計算，已略過。</div>`;
-    else if(diag.unmet&&diag.unmet.length) g+=`<div class="fwarn" style="margin-top:3px">⚠ 有 ${diag.unmet.length} 項門檻在保留套裝的前提下配不出來，以下為最佳嘗試。</div>`;
+    if(diag.noBaseButCond) g+=`<div class="fwarn" style="margin-top:3px">⚠ ${t('noBaseDataForUnit')} mid ${sel?sel.mid:''}, ${t('priorityStats')} ${t('thresholdsCannotCalc')}。</div>`;
+    else if(diag.unmet&&diag.unmet.length) g+=`<div class="fwarn" style="margin-top:3px">⚠ ${t('unmetThresholds')} ${diag.unmet.length} ${t('thresholdsUnmet')}。</div>`;
     html+=`<div class="fgoal">${g}</div>`;
   }
   html+=d.slotsHtml;
-  html+=`<div class="kv" style="margin-top:10px"><div><span>平均效率</span><b class="eff-hi">${d.avgEff.toFixed(1)}%</b></div><div><span>湊齊洞數</span><b>${d.n}/6</b></div></div>`;
+  html+=`<div class="kv" style="margin-top:10px"><div><span>${t('avgEff')}</span><b class="eff-hi">${d.avgEff.toFixed(1)}%</b></div><div><span>${t('slotsFilled')}</span><b>${d.n}/6</b></div></div>`;
   // 加成合計＋全隊型加成＋最終體質（皆出自 renderBuildDetail）
   let statsHtml=d.statsumHtml;
   if(teamBonus&&Object.keys(teamBonus).length){
-    statsHtml+='<div class="teambonus">🤝 全隊型套裝加成（跨隊彙總，全員含自己）：'+
+    statsHtml+=`<div class="teambonus">${t('teamSetBonus')}：`+
       Object.entries(teamBonus).map(([st,v])=>`${st} <b>+${v}</b>`).join('　')+'</div>';
   }
   if(d.fin){
-    statsHtml+=`<div class="finhead">📊 ${unitIcon(sel.en||sel.n,sel.mid)}${sel.n} 配裝後最終體質<span class="muted">（基礎值 SWARFARM 6★滿級 → 套上上方符文＋套裝%後）</span></div>
+    statsHtml+=`<div class="finhead">${t('finalStatsHeader')} ${unitIcon(sel.en||sel.n,sel.mid)}${sel.n} ${t('finalStatsLabel')}<span class="muted">(${t('baseDataFrom')} SWARFARM 6★${t('maxLevel')} → ${t('withRunesSets')})</span></div>
       ${d.finGridHtml}
-      <small class="note">最終值＝基礎體質 ×(1＋屬性%＋套裝%)＋固定值。暴率/暴傷/抵抗/命中為加法。未計入領導技/塔/神器/銘刻等額外加成。</small>`;
+      <small class="note">${t('finalStatsNote')}</small>`;
   } else if(sel){
-    statsHtml+=`<div class="finhead muted">查無 ${sel.n} 的體質基礎資料（mid ${sel.mid}），無法計算最終數值。</div>`;
+    statsHtml+=`<div class="finhead muted">${t('noBaseDataForUnit2')} ${sel.n} mid ${sel.mid}), ${t('cannotCalcFinal')}.</div>`;
   }
   return {resultHtml:html, statsHtml};
 }
 // ---- FIT_STATE 存取輔助（狀態只存 runeId，這裡經 runeById 現查）----
-function runeDescOf(r){ return `${r.set}${r.anc?'(古)':''} ${r.m} ${r.ef}%`; }
+function runeDescOf(r){ return `${r.set}${r.anc?t('ancientMarker'):''} ${r.m} ${r.ef}%`; }
 function entryFromSolved(cfg,solved){
   const plan={},runeDesc={};
   for(let sl=1;sl<=6;sl++){ const r=solved.p[sl]; plan[sl]=r?r.id:null; if(r)runeDesc[sl]=runeDescOf(r); }
@@ -23521,7 +24260,7 @@ function fitTeamBonus(){ // 全隊型套裝加成跨隊彙總；單隻時維持�
 // ---- 隊伍總覽面板：每隻一列摘要，點擊展開 6 洞明細(可編輯)，支援鎖定/單隻重配 ----
 function renderTeamPanel(){
   const list=FIT_STATE.list;
-  if(!list.length){ $('#fResults').innerHTML='<span class="muted">選好條件後按「計算最佳配裝」</span>'; return; }
+  if(!list.length){ $('#fResults').innerHTML=`<span class="muted">${t('placeholderCalc')}</span>`; return; }
   const team=fitTeamBonus();
   let out='';
   list.forEach((e,i)=>{
@@ -23531,8 +24270,8 @@ function renderTeamPanel(){
     const exp=FIT_STATE.expanded.has(i);
     const ic=sel?unitIcon(sel.en||sel.n,sel.mid):'';
     const st=d.fin
-      ?`SPD <b>${d.fin.spd}</b>　HP <b>${d.fin.hp}</b>　ATK <b>${d.fin.atk}</b>　DEF <b>${d.fin.def}</b>　暴 <b>${d.fin.cr}/${d.fin.cd}</b>`
-      :'<span class="muted">無基礎資料</span>';
+      ?`SPD <b>${d.fin.spd}</b>　HP <b>${d.fin.hp}</b>　ATK <b>${d.fin.atk}</b>　DEF <b>${d.fin.def}</b>　${t('critShort')} <b>${d.fin.cr}/${d.fin.cd}</b>`
+      :`<span class="muted">${t('noBaseDataLabel')}</span>`;
     const missN=missing?Object.keys(missing).length:0;
     let detail='';
     if(exp){
@@ -23543,30 +24282,30 @@ function renderTeamPanel(){
       let altHtml='';
       if(e.alt&&e.alt.length&&sel){
         const cur=d.fin;
-        altHtml='<div class="card" style="margin-top:8px"><h3 style="margin-top:0">其他候選方案</h3>'+e.alt.map((a,ai)=>{
+        altHtml='<div class="card" style="margin-top:8px"><h3 style="margin-top:0">'+t('otherCandidates')+'</h3>'+e.alt.map((a,ai)=>{
           const f=altFin(sel,a,team);
           const cmp=(lab,k)=>{ if(!f||!cur||f[k]==null||cur[k]==null)return ''; const df=Math.round((f[k]-cur[k])*10)/10;
             const cls=df>0?'fok':(df<0?'fwarn':'muted');
             return `<span style="margin-right:10px;white-space:nowrap">${lab} <b>${Math.round(f[k]*10)/10}</b> <span class="${cls}">(${df>0?'+':''}${df})</span></span>`; };
-          const rows=[cmp('SPD','spd'),cmp('HP','hp'),cmp('ATK','atk'),cmp('DEF','def'),cmp('暴率','cr'),cmp('暴傷','cd'),cmp('抵抗','re'),cmp('命中','ac')].join('');
-          return `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0;border-top:1px solid var(--line)"><b class="muted" style="white-space:nowrap">候選 ${ai+1}</b><span style="flex:1">${rows||'<span class="muted">無法計算（符文已消失或缺基礎值）</span>'}</span><button type="button" class="btn2 fitbtn" data-act="usealt" data-mi="${i}" data-ai="${ai}">套用</button></div>`;
-        }).join('')+'<small class="note">括號＝與目前採用方案的差異；套用後可按 ↩ 復原。</small></div>';
+          const rows=[cmp('SPD','spd'),cmp('HP','hp'),cmp('ATK','atk'),cmp('DEF','def'),cmp(t('critRate'),'cr'),cmp(t('critDmg'),'cd'),cmp(t(' resist'),'re'),cmp(t('accuracy'),'ac')].join('');
+          return `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0;border-top:1px solid var(--line)"><b class="muted" style="white-space:nowrap">${t('candidate')} ${ai+1}</b><span style="flex:1">${rows||`<span class="muted">${t('cannotCalc')}</span>`}</span><button type="button" class="btn2 fitbtn" data-act="usealt" data-mi="${i}" data-ai="${ai}">${t('applyCandidate')}</button></div>`;
+        }).join('')+`<small class="note">${t('candidateNote')}</small></div>`;
       }
-      detail=`<div class="fitdetail"><div class="fitbox"><div class="card"><h3 style="margin-top:0">推薦配裝</h3>${resultHtml}</div><div class="card"><h3 style="margin-top:0">符文加成合計</h3>${statsHtml}</div></div>${altHtml}</div>`;
+      detail=`<div class="fitdetail"><div class="fitbox"><div class="card"><h3 style="margin-top:0">${t('recommendedBuild')}</h3>${resultHtml}</div><div class="card"><h3 style="margin-top:0">${t('runeBonusTotal')}</h3>${statsHtml}</div></div>${altHtml}</div>`;
     }
     out+=`<div class="fitrow${e.locked?' locked':''}">
       <div class="fitsum" data-act="toggle" data-mi="${i}">
-        <span class="fitsum-l">${ic}<b>#${i+1}　${sel?sel.n:'(未知魔靈)'}</b>${e.locked?' <span class="lockmark">🔒</span>':''}</span>
+        <span class="fitsum-l">${ic}<b>#${i+1}　${sel?sel.n:t('unknownMonster')}</b>${e.locked?' <span class="lockmark">🔒</span>':''}</span>
         <span class="fitsum-sets">${d.setTxt}</span>
-        <span class="fitsum-st">${st}${missN?` <span class="fwarn">⚠符文缺${missN}</span>`:''}</span>
+        <span class="fitsum-st">${st}${missN?` <span class="fwarn">${t('runeMissing')}${missN}</span>`:''}</span>
         <span class="fitsum-btns">
-          <button type="button" class="btn2 fitbtn" data-act="lock" data-mi="${i}">${e.locked?'🔓解鎖':'🔒鎖定'}</button>
-          <button type="button" class="btn2 fitbtn" data-act="refit" data-mi="${i}"${e.locked?' disabled':''}>♻重配這隻</button>
+          <button type="button" class="btn2 fitbtn" data-act="lock" data-mi="${i}">${e.locked?t('unlock'):t('lock')}</button>
+          <button type="button" class="btn2 fitbtn" data-act="refit" data-mi="${i}"${e.locked?' disabled':''}>${t('rebuild')}</button>
           <span class="fitcaret">${exp?'▾':'▸'}</span>
         </span>
       </div>${detail}</div>`;
   });
-  $('#fResults').innerHTML=`<div class="controls" style="justify-content:flex-end;margin-bottom:4px"><button type="button" class="btn2" id="fExportImg" title="把目前隊伍配裝輸出成 PNG 圖片">🖼 匯出圖片</button></div>`+out;
+  $('#fResults').innerHTML=`<div class="controls" style="justify-content:flex-end;margin-bottom:4px"><button type="button" class="btn2" id="fExportImg" title="${t('pngExportTitle')}">${t('exportImage')}</button></div>`+out;
   const xb=$('#fExportImg'); if(xb)xb.onclick=exportTeamImage;
 }
 // ---- 配裝結果匯出 PNG（canvas 手繪；file:// 開啟時圖片會污染 canvas 無法輸出，需走 http）----
@@ -23581,7 +24320,7 @@ function xRoundRect(cx,x,y,w,h,r){
 }
 async function exportTeamImage(){
   const list=FIT_STATE.list;
-  if(!list.length){ uxToast('沒有配裝結果可匯出','warn'); return; }
+  if(!list.length){ uxToast(t('noResultsToExport'),'warn'); return; }
   const team=fitTeamBonus();
   const W=1080, headH=56, rowH=178, pad=16;
   const H=headH+list.length*rowH+pad;
@@ -23592,7 +24331,7 @@ async function exportTeamImage(){
   cx.fillStyle='#12141a'; cx.fillRect(0,0,W,H);
   const player=(document.getElementById('hPlayer')||{}).textContent||'';
   cx.fillStyle='#e8eaf0'; cx.font='bold 20px '+F;
-  cx.fillText('符文配裝方案'+(player?'　—　'+player:''),pad,30);
+  cx.fillText(t('runeBuildPlan')+(player?'　—　'+player:''),pad,30);
   cx.fillStyle='#8a90a0'; cx.font='12px '+F;
   cx.fillText(new Date().toLocaleString(),pad,48);
   // 頭像預載（同源才不會污染 canvas）
@@ -23611,7 +24350,7 @@ async function exportTeamImage(){
     const im=icons[e.uid];
     if(im){ try{cx.drawImage(im,pad+12,y0+14,56,56);}catch(err){} }
     cx.fillStyle='#e8eaf0'; cx.font='bold 14px '+F;
-    cx.fillText(`#${i+1} ${sel?sel.n:'(未知)'}${e.locked?' 🔒':''}`,pad+12,y0+92,120);
+    cx.fillText(`#${i+1} ${sel?sel.n:t('unknown')}${e.locked?' 🔒':''}`,pad+12,y0+92,120);
     cx.fillStyle='#8a90a0'; cx.font='11px '+F;
     cx.fillText((d.setTxt||'').replace(/<[^>]+>/g,''),pad+12,y0+110,126);
     // 6 洞符文
@@ -23619,25 +24358,25 @@ async function exportTeamImage(){
     for(let sl=1;sl<=6;sl++){
       const x=bx+(sl-1)*bw, r=p[sl];
       cx.fillStyle='#242836'; xRoundRect(cx,x,y0+12,bw-6,rowH-36,6); cx.fill();
-      cx.fillStyle='#8a90a0'; cx.font='10px '+F; cx.fillText(sl+'洞',x+7,y0+26);
+      cx.fillStyle='#8a90a0'; cx.font='10px '+F; cx.fillText(sl+t('slotLabel'),x+7,y0+26);
       if(r){
         const isInt=e.intFill&&e.intFill.sl==sl;
         cx.fillStyle='#e8eaf0'; cx.font='bold 12px '+F;
-        cx.fillText((r.set||'')+(r.anc?'(古)':'')+(isInt?'→'+(e.intFill.set||''):''),x+7,y0+42,bw-14);
+        cx.fillText((r.set||'')+(r.anc?'('+t('ancientShort')+')':'')+(isInt?'→'+(e.intFill.set||''):''),x+7,y0+42,bw-14);
         cx.font='11px '+F; cx.fillText(r.m,x+7,y0+58,bw-14);
         cx.fillStyle=effColor(r.ef); cx.font='10px '+F; cx.fillText('ef '+r.ef+'%',x+7,y0+72);
         cx.fillStyle='#a6acc0'; cx.font='10px '+F;
         (r.sub||'').split(' / ').slice(0,4).forEach((s,k)=>cx.fillText(s,x+7,y0+88+k*13,bw-14));
       }else{
         cx.fillStyle='#5a6070'; cx.font='11px '+F;
-        cx.fillText(missing&&missing[sl]?'已消失':'（無）',x+7,y0+42);
+        cx.fillText(missing&&missing[sl]?t('missingCanvas'):t('noneCanvas'),x+7,y0+42);
       }
     }
     // 最終體質
     const sx=W-pad-226;
-    cx.fillStyle='#8a90a0'; cx.font='10px '+F; cx.fillText('最終體質'+(d.fin?'':'（無基礎資料）'),sx,y0+26);
+    cx.fillStyle='#8a90a0'; cx.font='10px '+F;     cx.fillText(`${t('finalStatsCanvas')}${d.fin?'':t('noBaseDataCanvas')}`,sx,y0+26);
     if(d.fin){
-      const rows=[['SPD',d.fin.spd],['HP',d.fin.hp],['ATK',d.fin.atk],['DEF',d.fin.def],['暴率',d.fin.cr+'%'],['暴傷',d.fin.cd+'%'],['抵抗',d.fin.re+'%'],['命中',d.fin.ac+'%']];
+      const rows=[['SPD',d.fin.spd],['HP',d.fin.hp],['ATK',d.fin.atk],['DEF',d.fin.def],[t('statCR'),d.fin.cr+'%'],[t('statCD'),d.fin.cd+'%'],[t('statRES'),d.fin.re+'%'],[t('statACC'),d.fin.ac+'%']];
       rows.forEach(([lab,v],k)=>{
         const col=k%2, row=(k-col)/2;
         const x=sx+col*112, y=y0+48+row*26;
@@ -23648,22 +24387,22 @@ async function exportTeamImage(){
   });
   try{
     cv.toBlob(b=>{
-      if(!b){ uxToast('圖片輸出失敗','error'); return; }
+      if(!b){ uxToast(t('imgExportFail'),'error'); return; }
       const a=document.createElement('a');
       a.href=URL.createObjectURL(b);
       const dt0=new Date();
-      a.download='符文配裝_'+dt0.getFullYear()+'-'+String(dt0.getMonth()+1).padStart(2,'0')+'-'+String(dt0.getDate()).padStart(2,'0')+'.png';
+      a.download=t('runeBuild_')+'_'+dt0.getFullYear()+'-'+String(dt0.getMonth()+1).padStart(2,'0')+'-'+String(dt0.getDate()).padStart(2,'0')+'.png';
       a.click();
       setTimeout(()=>URL.revokeObjectURL(a.href),5000);
-      uxToast('已匯出圖片','success');
+      uxToast(t('imageExported'),'success');
     },'image/png');
   }catch(err){
-    uxToast('無法匯出：以 file:// 開啟時瀏覽器禁止讀取含本地圖片的 canvas，請改用線上版或本機伺服器。','error',8000);
+    uxToast(t('cannotExportFile'),'error',8000);
   }
 }
 async function refitOne(i){ // 只重配第 i 隻：排除其他所有隻目前占用的符文（worker 背景計算）
   const e=FIT_STATE.list[i]; if(!e||e.locked)return;
-  fitPushUndo('重配 #'+(i+1));
+  fitPushUndo(t('rebuildN')+(i+1));
   const cfg=e.cfg;
   const st=$('#fRunStatus');
   try{
@@ -23673,21 +24412,21 @@ async function refitOne(i){ // 只重配第 i 隻：排除其他所有隻目前�
     FIT_STATE.list[i]=ne;
     renderTeamPanel();
   }catch(err){
-    if(err&&err.canceled){ uxToast('已取消計算','warn'); return; }
+    if(err&&err.canceled){ uxToast(t('calcCancelled'),'warn'); return; }
     throw err;
   } finally { if(st)st.innerHTML=''; }
 }
 // ---- 手動刪改單顆符文 ----
 function removeManualRune(mi,sl){
   const e=FIT_STATE.list[mi]; if(!e||e.plan[sl]==null)return;
-  fitPushUndo('刪除符文');
+  fitPushUndo(t('removeRune'));
   e.plan[sl]=null; if(e.runeDesc)delete e.runeDesc[sl];
   if(e.intFill&&e.intFill.sl===sl)e.intFill=null; // 動到無形補位洞→取消補位推斷
   renderTeamPanel();
 }
 function applyManualRune(mi,sl,runeId){
   const e=FIT_STATE.list[mi]; const r=runeById[runeId]; if(!e||!r)return;
-  fitPushUndo('更換符文');
+  fitPushUndo(t('swapRuneLabel'));
   // 若該符文已被本隊任何魔靈(含自己他洞)占用→先自原處卸下
   FIT_STATE.list.forEach(o=>{
     for(let s=1;s<=6;s++){ if(o.plan[s]===r.id){ o.plan[s]=null; if(o.runeDesc)delete o.runeDesc[s]; if(o.intFill&&o.intFill.sl===s)o.intFill=null; } }
@@ -23702,15 +24441,15 @@ async function applyAltPlan(mi,ai){ // 套用候選方案（alt 保留原樣，�
   const ids=new Set(Object.values(alt.plan).filter(id=>id!=null));
   const holders=new Set();
   FIT_STATE.list.forEach((o,oi)=>{ if(oi===mi)return; for(let s=1;s<=6;s++){ if(o.plan[s]!=null&&ids.has(o.plan[s]))holders.add('#'+(oi+1)); } });
-  if(holders.size&&!await uxConfirm(`候選方案有符文目前配給本隊 ${[...holders].join('、')}，套用後將自對方卸下（該洞變空）。繼續？`,{danger:true,okText:'套用'}))return;
-  fitPushUndo('套用候選 '+(ai+1));
+  if(holders.size&&!await uxConfirm(t('candidateHasRune').replace('#N',[...holders].join('、')),{danger:true,okText:t('applyCandidate')}))return;
+  fitPushUndo(t('applyCandidateN')+(ai+1));
   FIT_STATE.list.forEach((o,oi)=>{ if(oi===mi)return;
     for(let s=1;s<=6;s++){ if(o.plan[s]!=null&&ids.has(o.plan[s])){ o.plan[s]=null; if(o.runeDesc)delete o.runeDesc[s]; if(o.intFill&&o.intFill.sl===s)o.intFill=null; } } });
   const plan={},desc={};
   for(let s=1;s<=6;s++){ const id=alt.plan[s]; plan[s]=id!=null?id:null; const r=id!=null?runeById[id]:null; if(r)desc[s]=runeDescOf(r); }
   e.plan=plan; e.runeDesc=desc; e.intFill=alt.intFill||null;
   renderTeamPanel();
-  uxToast(`已套用候選 ${ai+1}`,'success');
+  uxToast(t('appliedCandidate',{n: ai+1}),'success');
 }
 // ---- 符文選擇器 modal ----
 let rpkCtx=null;
@@ -23721,14 +24460,14 @@ function openRunePicker(mi,sl){
   const e=FIT_STATE.list[mi]; if(!e)return;
   const sel=unitById[e.uid];
   rpkCtx={mi,sl,q:'',sort:'ef',free:false,shown:60};
-  $('#rPickerBody').innerHTML=`<h3 style="margin-top:0">${sel?unitIcon(sel.en||sel.n,sel.mid)+' '+sel.n:''}　第 <b>${sl}</b> 洞　更換符文</h3>
+  $('#rPickerBody').innerHTML=`<h3 style="margin-top:0">${sel?unitIcon(sel.en||sel.n,sel.mid)+' '+sel.n:''}　${t('slot')} <b>${sl}</b>　${t('swapRune')}</h3>
     <div class="rpk-filters">
-      <input id="rpkQ" placeholder="搜尋：套裝 / 主屬 / 副屬 / 裝備者" style="flex:1;min-width:220px">
-      <select id="rpkSort"><option value="ef">效率 高→低</option><option value="spd">速度 高→低</option><option value="mainv">主屬數值 高→低</option></select>
-      <label style="font-size:12.5px"><input type="checkbox" id="rpkFree"> 只看未被本隊占用</label>
+      <input id="rpkQ" placeholder="${t('searchRune')}" style="flex:1;min-width:220px">
+      <select id="rpkSort"><option value="ef">${t('effHighLow')}</option><option value="spd">${t('spdHighLow')}</option><option value="mainv">${t('mainHighLow')}</option></select>
+      <label style="font-size:12.5px"><input type="checkbox" id="rpkFree"> ${t('onlyUnused')}</label>
     </div>
     <div class="rpk-list" id="rpkList"></div>
-    <small class="note">點一顆即替換到第 ${sl} 洞。「⚔ 本隊使用中」的符文點選後會自對方卸下（該洞變空）。</small>`;
+    <small class="note">${t('runePickerNote')}</small>`;
   $('#rpkQ').oninput=()=>{ rpkCtx.q=$('#rpkQ').value; rpkCtx.shown=60; renderRpkList(); };
   $('#rpkSort').onchange=()=>{ rpkCtx.sort=$('#rpkSort').value; rpkCtx.shown=60; renderRpkList(); };
   $('#rpkFree').onchange=()=>{ rpkCtx.free=$('#rpkFree').checked; rpkCtx.shown=60; renderRpkList(); };
@@ -23749,12 +24488,12 @@ function renderRpkList(){
   const total=list.length; list=list.slice(0,shown);
   $('#rpkList').innerHTML=(list.map(r=>{
     const ub=usedBy[r.id], cur=r.id===e.plan[sl];
-    const tag=cur?'<span class="fok">✓ 目前配置</span>'
-      :(ub!=null?`<span class="inuse">⚔ 本隊 #${ub+1} 使用中</span>`
-      :(r.ow?`<span class="muted">裝於 ${r.ow}</span>`:'<span class="muted">倉庫</span>'));
+    const tag=cur?`<span class="fok">${t('currentConfig')}</span>`
+      :(ub!=null?`<span class="inuse">⚔ ${t('usedByTeam').replace('#N','#'+(ub+1))}</span>`
+      :(r.ow?`<span class="muted">${t('equippedOnLabel')} ${r.ow}</span>`:`<span class="muted">${t('storageShort')}</span>`));
     return `<div class="rpk-item${cur?' rpk-cur':''}" data-rid="${r.id}"><span><span class="setbadge">${r.set}</span>${r.anc?' <span class="anc">A</span>':''} <b>${r.m}</b> <span class="muted">${r.pf||''}</span> <span class="muted">${r.sub||''}</span></span><span><b class="${effCls(r.ef)}">${r.ef}%</b> ${tag}</span></div>`;
-  }).join('')||'<div class="rpk-item"><span class="muted">查無符合的符文</span></div>')
-  +(total>shown?`<div class="rpk-item" data-more="1" style="justify-content:center;cursor:pointer"><span style="color:var(--acc);font-weight:700">▼ 載入更多（還有 ${total-shown} 顆）</span></div>`:'');
+  }).join('')||`<div class="rpk-item"><span class="muted">${t('noMatchForRune')}</span></div>`)
+  +(total>shown?`<div class="rpk-item" data-more="1" style="justify-content:center;cursor:pointer"><span style="color:var(--acc);font-weight:700">${t('loadMoreRuns',{n:total-shown})}</span></div>`:'');
 }
 $('#rPickerBody').onclick=async ev=>{
   const more=ev.target.closest('[data-more]');
@@ -23765,7 +24504,7 @@ $('#rPickerBody').onclick=async ev=>{
   const e=FIT_STATE.list[mi];
   if(r.id===e.plan[sl]){ closeRunePicker(); return; } // 點目前配置→視同取消
   let ub=null; FIT_STATE.list.forEach((o,oi)=>{ for(let s=1;s<=6;s++){ if(o.plan[s]===r.id&&!(oi===mi&&s===sl))ub=oi; } });
-  if(ub!=null&&!await uxConfirm(`此符文目前配給本隊 #${ub+1}，確定搶過來？（對方該洞將變空）`,{danger:true,okText:'搶過來'}))return;
+  if(ub!=null&&!await uxConfirm(t('usedByTeam').replace('#N','#'+(ub+1)),{danger:true,okText:'OK'}))return;
   applyManualRune(mi,sl,r.id);
 };
 // ---- 配裝方案存檔（localStorage，多方案命名保存/載入/刪除）----
@@ -23774,11 +24513,11 @@ const escH=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;
 function planReadAll(){ try{ return JSON.parse(localStorage.getItem(PLAN_KEY)||'{}')||{}; }catch(e){ return {}; } }
 function planWriteAll(o){
   try{ localStorage.setItem(PLAN_KEY,JSON.stringify(o)); return true; }
-  catch(e){ uxToast('無法寫入 localStorage（file:// 開啟或隱私模式可能被瀏覽器封鎖）：'+e.message,'error',8000); return false; }
+  catch(e){ uxToast(t('cannotWrite')+e.message,'error',8000); return false; }
 }
 function planRefreshSelect(){
   const sel=$('#fPlanSel'), cur=sel.value, all=planReadAll();
-  sel.innerHTML='<option value="">— 已存方案 —</option>'+Object.keys(all).sort().map(n=>`<option value="${escH(n)}">${escH(n)}</option>`).join('');
+  sel.innerHTML=`<option value="">— ${t('savedPlans')} —</option>`+Object.keys(all).sort().map(n=>`<option value="${escH(n)}">${escH(n)}</option>`).join('');
   if(all[cur])sel.value=cur;
 }
 // 回填一列魔靈設定（readMonRow 的反向）
@@ -23796,26 +24535,26 @@ function writeMonRow(row,cfg){
   row.querySelector('.fUseInt').checked=!!cfg.useInt;
 }
 $('#fPlanSave').onclick=async()=>{
-  if(!FIT_STATE.list.length){ uxToast('目前沒有配裝結果可存，請先按「計算最佳配裝」。','warn'); return; }
-  const name=((await uxPrompt('方案名稱：',{title:'儲存方案',defaultValue:$('#fPlanSel').value||''}))||'').trim();
+  if(!FIT_STATE.list.length){ uxToast(t('noResultsToSave'),'warn'); return; }
+  const name=((await uxPrompt(t('planName'),{title:t('savePlanTitle2'),defaultValue:$('#fPlanSel').value||''}))||'').trim();
   if(!name)return;
   const all=planReadAll();
-  if(all[name]&&!await uxConfirm(`方案「${name}」已存在，要覆蓋嗎？`,{danger:true,okText:'覆蓋'}))return;
+  if(all[name]&&!await uxConfirm(t('planExists').replace('name',name),{danger:true,okText:t('overwrite')}))return;
   all[name]={
     savedAt:new Date().toISOString(),
     wizard:($('#hPlayer').textContent||''),
     mons:FIT_STATE.list.map(e=>({uid:e.uid,unitName:(unitById[e.uid]||{}).n||'',locked:!!e.locked,cfg:e.cfg,plan:e.plan,runeDesc:e.runeDesc,intFill:e.intFill}))
   };
-  if(planWriteAll(all)){ planRefreshSelect(); $('#fPlanSel').value=name; fitMarkSynced(); uxToast(`方案「${name}」已儲存`,'success'); }
+  if(planWriteAll(all)){ planRefreshSelect(); $('#fPlanSel').value=name; fitMarkSynced(); uxToast(t('savedAsPlan',{name:name}),'success'); }
 };
 $('#fPlanLoad').onclick=async()=>{
-  const name=$('#fPlanSel').value; if(!name){ uxToast('請先在下拉選單選擇方案。','warn'); return; }
-  if(!UNITS.length||!RUNES.length){ uxToast('請先匯入 JSON 再載入方案。','warn'); return; }
-  const pl=planReadAll()[name]; if(!pl){ uxToast('方案不存在。','warn'); planRefreshSelect(); return; }
+  const name=$('#fPlanSel').value; if(!name){ uxToast(t('selectPlan'),'warn'); return; }
+  if(!UNITS.length||!RUNES.length){ uxToast(t('importJsonFirst'),'warn'); return; }
+  const pl=planReadAll()[name]; if(!pl){ uxToast(t('planNotExist'),'warn'); planRefreshSelect(); return; }
   if(FIT_STATE.list.length&&fitIsDirty()){
-    if(!await uxConfirm('目前清單有尚未儲存的變更，載入方案將覆蓋它們。確定載入？',{danger:true,okText:'載入'}))return;
+    if(!await uxConfirm(t('planOverwrite'),{danger:true,okText:t('loadPlan')}))return;
   }
-  if(FIT_STATE.list.length)fitPushUndo(`載入「${name}」前`);
+  if(FIT_STATE.list.length)fitPushUndo(t('loadPlanUndo',{name}));
   const misses=[];
   FIT_STATE.list=pl.mons.map(m=>{
     if(!unitById[m.uid])misses.push(m.unitName||('uid '+m.uid));
@@ -23828,59 +24567,59 @@ $('#fPlanLoad').onclick=async()=>{
   $('#fPool').checked=pl.mons.some(m=>m.cfg&&m.cfg.includeAll);
   renderTeamPanel();
   fitMarkSynced();
-  if(misses.length)await uxAlert('下列魔靈在目前匯入的帳號中不存在，將顯示為未知魔靈：\n'+misses.join('、'));
+  if(misses.length)await uxAlert(t('unknownMonsters')+'\n'+misses.join('、'));
 };
 $('#fPlanDel').onclick=async()=>{
-  const name=$('#fPlanSel').value; if(!name){ uxToast('請先在下拉選單選擇方案。','warn'); return; }
-  if(!await uxConfirm(`確定刪除方案「${name}」？`,{danger:true,okText:'刪除'}))return;
+  const name=$('#fPlanSel').value; if(!name){ uxToast(t('selectPlan'),'warn'); return; }
+  if(!await uxConfirm(t('planExists').replace('name',name),{danger:true,okText:t('deletePlan')}))return;
   const all=planReadAll(); delete all[name];
-  if(planWriteAll(all)){ planRefreshSelect(); uxToast(`方案「${name}」已刪除`,'success'); }
+  if(planWriteAll(all)){ planRefreshSelect(); uxToast(t('deletedPlan').replace('name',name),'success'); }
 };
 // ---- 方案匯出／匯入（JSON 檔，跨瀏覽器/裝置備份；localStorage 綁 origin，清資料即失）----
 $('#fPlanExp').onclick=async()=>{
   const all=planReadAll(); const names=Object.keys(all);
-  if(!names.length){ uxToast('目前沒有已存方案可匯出。','warn'); return; }
+  if(!names.length){ uxToast(t('noPlansToExport'),'warn'); return; }
   const cur=$('#fPlanSel').value;
-  let plans=all, scope=`全部 ${names.length} 個方案`;
+  let plans=all, scope=t('allPlansN',{n:names.length});
   if(cur&&all[cur]&&names.length>1){
-    const r=await uxConfirm(`要只匯出選定方案「${cur}」，還是匯出全部 ${names.length} 個方案？`,
-      {title:'匯出範圍',okText:'只匯出此方案',cancelText:'匯出全部',cancelValue:'all',dismissValue:null});
+    const r=await uxConfirm(t('exportScope'),
+      {title:t('exportScope'),okText:t('exportThis'),cancelText:t('exportAll'),cancelValue:'all',dismissValue:null});
     if(r===null)return;
-    if(r===true){ plans={[cur]:all[cur]}; scope=`方案「${cur}」`; }
+    if(r===true){ plans={[cur]:all[cur]}; scope=t('currentPlan',{name:cur}); }
   }
   const data={type:'swfit_plans_export',version:1,exportedAt:new Date().toISOString(),plans};
   const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='符文配裝方案_'+new Date().toISOString().slice(0,10)+'.json';
+  a.download=t('runeBuild_')+'_'+new Date().toISOString().slice(0,10)+'.json';
   a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
-  uxToast('已匯出 '+scope,'success');
+  uxToast(t('exportedScope',{scope:scope}),'success');
 };
 $('#fPlanImp').onclick=()=>$('#fPlanImpFile').click();
 $('#fPlanImpFile').onchange=()=>{
   const f=$('#fPlanImpFile').files[0]; $('#fPlanImpFile').value=''; if(!f)return;
   const rd=new FileReader();
   rd.onload=async ev=>{
-    let d; try{ d=JSON.parse(ev.target.result); }catch(e){ uxToast('不是有效的 JSON 檔。','error'); return; }
-    if(!d||d.type!=='swfit_plans_export'||!d.plans||typeof d.plans!=='object'){ uxToast('這不是本工具匯出的方案檔（缺 type/plans）。','error'); return; }
+    let d; try{ d=JSON.parse(ev.target.result); }catch(e){ uxToast(t('notValidJson'),'error'); return; }
+    if(!d||d.type!=='swfit_plans_export'||!d.plans||typeof d.plans!=='object'){ uxToast(t('notPlanFile'),'error'); return; }
     const all=planReadAll(); const inc=Object.keys(d.plans);
-    if(!inc.length){ uxToast('方案檔內沒有任何方案。','warn'); return; }
+    if(!inc.length){ uxToast(t('noPlansInFile'),'warn'); return; }
     const dup=inc.filter(n=>all[n]);
     let overwrite=false;
     if(dup.length){
-      const r=await uxConfirm(`下列 ${dup.length} 個方案與現有方案同名：\n${dup.join('、')}\n\n要覆蓋現有方案，還是保留兩者（匯入的自動改名）？`,
-        {title:'同名方案',okText:'覆蓋',cancelText:'保留兩者（改名）',cancelValue:'rename',dismissValue:null,danger:true});
+      const r=await uxConfirm(t('duplicatePlansMsg').replace('${n}',dup.length)+'\n'+dup.join('、'),
+        {title:t('duplicatePlansTitle'),okText:t('overwriteBtn'),cancelText:t('keepBothBtn'),cancelValue:'rename',dismissValue:null,danger:true});
       if(r===null)return;
       overwrite=(r===true);
     }
     let added=0,replaced=0;
     inc.forEach(n=>{
       if(all[n]&&!overwrite){
-        let nn=n+' (匯入)',k=2; while(all[nn])nn=n+' (匯入'+(k++)+')';
+        let nn=n+t('importSuffix'),k=2; while(all[nn])nn=n+t('importSuffixN',{n:k++});
         all[nn]=d.plans[n]; added++;
       } else { all[n]?replaced++:added++; all[n]=d.plans[n]; }
     });
-    if(planWriteAll(all)){ planRefreshSelect(); uxToast(`匯入完成：新增 ${added} 個、覆蓋 ${replaced} 個方案`,'success',5000); }
+    if(planWriteAll(all)){ planRefreshSelect(); uxToast(t('importComplete',{n:added,m:replaced}),'success',5000); }
   };
   rd.readAsText(f,'utf-8');
 };
@@ -23938,7 +24677,7 @@ function fitCancelCalc(){
   if(!_fitJob)return;
   const j=_fitJob; _fitJob=null;
   try{j.w.terminate();}catch(e){}
-  const err=new Error('已取消'); err.canceled=true; j.reject(err);
+  const err=new Error(t('cancelled')); err.canceled=true; j.reject(err);
 }
 function fitRunWorker(msg,onProgress){
   return new Promise((resolve,reject)=>{
@@ -23947,7 +24686,7 @@ function fitRunWorker(msg,onProgress){
     try{ w=buildFitWorker(); }catch(err){ return reject(err); }
     _fitJob={w,reject};
     const fin=()=>{ if(_fitJob&&_fitJob.w===w)_fitJob=null; try{w.terminate();}catch(e){} };
-    w.onerror=ev=>{ fin(); reject(new Error(ev.message||'Worker 執行錯誤')); };
+    w.onerror=ev=>{ fin(); reject(new Error(ev.message||t('workerError'))); };
     w.onmessage=e=>{
       const m=e.data;
       if(m.type==='progress'){ if(onProgress)onProgress(m); return; }
@@ -23958,7 +24697,7 @@ function fitRunWorker(msg,onProgress){
 }
 function calcStatus(st,msg){
   if(!st)return;
-  st.innerHTML=`<span class="spin"></span>${msg}　<button type="button" class="btn2" style="padding:1px 8px">✕ 取消</button>`;
+  st.innerHTML=`<span class="spin"></span>${msg}　<button type="button" class="btn2" style="padding:1px 8px">✕ ${t('cancelBtn')}</button>`;
   const b=st.querySelector('button'); if(b)b.onclick=fitCancelCalc;
 }
 // 同步後備：輸出與 worker 相同(id-based)，餵給 resultToSolved
@@ -23966,7 +24705,7 @@ async function solveJobsInline(jobs,used,st){
   const out=[];
   for(let i=0;i<jobs.length;i++){
     const cfg=jobs[i],u=unitById[cfg.uid];
-    if(st)st.innerHTML=`<span class="spin"></span>計算中(相容模式)… 第 ${i+1}/${jobs.length} 隻${u?'：'+u.n:''}`;
+    if(st)st.innerHTML=`<span class="spin"></span>${t('calculatingCompat')} ${i+1}/${jobs.length} ${t('unitLabel')}${u?'：'+u.n:''}`;
     await nextFrame();
     const s=solveFit(cfg.uid,cfg.s4,'',cfg.wantMain,!!cfg.includeAll,{prios:cfg.prios,thresholds:cfg.thresholds,twos:cfg.twos,excludeIds:used,useInt:cfg.useInt});
     const p={};for(let sl=1;sl<=6;sl++){const r=s.p[sl];p[sl]=r?r.id:null;if(r)used.add(r.id);}
@@ -23978,15 +24717,15 @@ async function solveJobsInline(jobs,used,st){
 async function solveJobs(jobs,used,st){
   if(!jobs.length)return [];
   try{
-    calcStatus(st,`計算中… 0/${jobs.length}`);
+    calcStatus(st,t('calculatingN').replace('${i}','0').replace('${n}',jobs.length));
     const done=await fitRunWorker(
       {cmd:'fit',runes:RUNES,units:UNITS,baseStats:(typeof BASE_STATS!=='undefined')?BASE_STATS:null,jobs,used:[...used]},
-      m=>{ const u=unitById[jobs[m.i].uid]; calcStatus(st,`計算中… 第 ${m.i+1}/${m.n} 隻${u?'：'+u.n:''}`); });
+      m=>{ const u=unitById[jobs[m.i].uid]; calcStatus(st,t('calculatingN').replace('${i}',m.i+1).replace('${n}',m.n)+(u?'：'+u.n:'')); });
     done.results.forEach(r=>{ for(let sl=1;sl<=6;sl++){ if(r.p[sl]!=null)used.add(r.p[sl]); } });
     return done.results;
   }catch(err){
     if(err&&err.canceled)throw err;
-    console.warn('Worker 計算失敗，退回同步模式：',err);
+    console.warn(t('workerFailed'),err);
     return await solveJobsInline(jobs,used,st);
   }
 }
@@ -23998,8 +24737,8 @@ $('#fRun').onclick=async()=>{
   await withBusy([$('#fRun'),$('#fClear'),$('#fUndo'),$('#fPlanLoad'),$('#fPlanSave')],async()=>{
     const includeAll=$('#fPool').checked;
     const rows=$$('#fMons .fMonRow').map(readMonRow).filter(c=>c.uid);
-    if(FIT_STATE.list.length)fitPushUndo('重新計算前');
-    if(!rows.length){ $('#fResults').innerHTML='<span class="muted">請至少加入一隻魔靈</span>'; FIT_STATE.list=[]; FIT_STATE.expanded=new Set(); return; }
+    if(FIT_STATE.list.length)fitPushUndo(t('recalcBefore'));
+    if(!rows.length){ $('#fResults').innerHTML=`<span class="muted">${t('addMonster')}</span>`; FIT_STATE.list=[]; FIT_STATE.expanded=new Set(); return; }
     // 鎖定者(依 uid 對應)保留原配裝並優先占用符文；其餘依序重解(符文互斥)
     const lockMap=new Map();
     FIT_STATE.list.forEach(e=>{ if(!e.locked)return; if(!lockMap.has(e.uid))lockMap.set(e.uid,[]); lockMap.get(e.uid).push(e); });
@@ -24022,19 +24761,19 @@ $('#fRun').onclick=async()=>{
         newList.push(entryFromSolved(pk.cfg,resultToSolved(r)));
       });
     }catch(err){
-      if(err&&err.canceled){ uxToast('已取消計算','warn'); return; }
-      throw err;
-    } finally { st.innerHTML=''; }
-    FIT_STATE.list=newList; FIT_STATE.expanded=new Set();
-    renderTeamPanel();
-    uxToast(`配裝完成：共 ${newList.length} 隻`,'success');
+    if(err&&err.canceled){ uxToast(t('calcCancelled'),'warn'); return; }
+    throw err;
+  } finally { st.innerHTML=''; }
+  FIT_STATE.list=newList; FIT_STATE.expanded=new Set();
+  renderTeamPanel();
+  uxToast(t('calcComplete',{n:newList.length}),'success');
   });
   fitUndoBtnSync(); // withBusy 解鎖會把 #fUndo 一律 enable，這裡按堆疊實況校正
 };
 
 // ---------- 套組產能分析（用整個符文池最多能配出幾組達標套裝）----------
-$('#capSet4').innerHTML=fSet4OptsHtml; $('#capSet4').value='暴走';
-$('#capSet2').innerHTML=twoNamesHtml; $('#capSet2').value='意志';
+$('#capSet4').innerHTML=fSet4OptsHtml; $('#capSet4').value='Violent';
+$('#capSet2').innerHTML=twoNamesHtml; $('#capSet2').value='Will';
 // 模式切換：配裝 ⇄ 產能
 $$('.fModeBtn').forEach(b=>b.onclick=()=>{
   const m=b.dataset.fmode;
@@ -24160,31 +24899,31 @@ function snapSupply(pool){ const s={s4:[],s2:[],any:[],int:[]}; for(let sl=0;sl<
 function renderCap(res){
   const {groups,need,pct,baseSpd,threshold,S4,S2}=res;
   const finOf=g=>Math.round(baseSpd*(1+pct/100)+g.total);
-  const setTag=r=> r.sid===INT_SID?'<span style="color:var(--warn)">無形<span class="muted">(補位)</span></span>':(r.set===S4?'<span style="color:var(--acc)">'+r.set+'</span>':(S2&&r.set===S2?'<span style="color:var(--good)">'+r.set+'</span>':'<span class="muted">'+(r.set||'?')+'</span>'));
+  const setTag=r=> r.sid===INT_SID?`<span style="color:var(--warn)">${t('intangibleFill')}<span class="muted">${t('fillSlot')}</span></span>`:(r.set===S4?`<span style="color:var(--acc)">${r.set}</span>`:(S2&&r.set===S2?`<span style="color:var(--good)">${r.set}</span>`:`<span class="muted">${r.set||'?'}</span>`));
   const intTot=(res.supply0.int||[]).reduce((a,b)=>a+b,0);
-  const head=`<div class="card"><div style="font-size:15px;margin-bottom:6px">最多可配 <b style="font-size:26px;color:var(--acc)">${groups.length}</b> 組</div>
-    <div class="muted" style="font-size:12.5px">條件：4件<b>${S4}</b>＋2件<b>${S2||'（自由洞）'}</b>、最終速度 ≥ <b>${threshold}</b>（假設基礎速 ${baseSpd}${pct?` ＋套裝 +${pct}% 速`:''}）。<br>
-    每組符文須提供速度 ≥ <b>${Math.max(0,Math.round(need*10)/10)}</b>。速度只計符文＋自身套裝，未含神器/全隊型套；${intTot>0?`可用無形符文 <b>${intTot}</b> 顆（每組至多1顆補位）`:'未含無形符文'}。</div></div>`;
+  const head=`<div class="card"><div style="font-size:15px;margin-bottom:6px">${t('maxSetsLabel')} <b style="font-size:26px;color:var(--acc)">${groups.length}</b> ${t('setsUnit')}</div>
+    <div class="muted" style="font-size:12.5px">${t('conditionLabel')} 4pc<b>${S4}</b> + 2pc<b>${S2||t('freeSlot2')}</b>, ${t('finalSpd')} ≥ <b>${threshold}</b> (${t('spdOnlyFromRune')} ${baseSpd}${pct?` + ${pct}% ${t('spdFromSet')}`:''}).<br>
+    ${t('spdOnlyFromRune2')} ≥ <b>${Math.max(0,Math.round(need*10)/10)}</b>. ${t('spdNoArtifacts')};${intTot>0?t('withInvisible')+' <b>'+intTot+'</b> '+t('perTeamMax1'):t('withoutInvisible')}。</div></div>`;
   // 瓶頸：哪個洞的可用符文最少(4件套/2件套分別)
   const sup=res.supply0;
   const bnRows=[];
   for(let sl=0;sl<6;sl++){
-    const s2txt=S2?`｜2件套(${S2}) ${sup.s2[sl]}`:`｜自由洞 ${sup.any[sl]}`;
-    bnRows.push(`<div class="slotline"><span>${sl+1} 洞</span><span class="muted">4件套(${S4}) ${sup.s4[sl]}${s2txt}</span></div>`);
+    const s2txt=S2?`${t('slotSupplyLabel')}${S2}) ${sup.s2[sl]}`:`${t('freeSlotLabel')}${sup.any[sl]}`;
+    bnRows.push(`<div class="slotline"><span>${sl+1}${t('slotLabel')}</span><span class="muted">${t('fourPcLabel')}${S4}) ${sup.s4[sl]}${s2txt}</span></div>`);
   }
-  const bottleneck=`<div class="card"><h3 style="margin-top:0">各洞可用符文（瓶頸判斷）</h3>${bnRows.join('')}<small class="note">組數通常卡在「某洞可用的 4 件套或 2 件套符文最少」的那個洞。</small></div>`;
+  const bottleneck=`<div class="card"><h3 style="margin-top:0">${t('bottleneckTitle')}</h3>${bnRows.join('')}<small class="note">${t('bottleneckNote')}</small></div>`;
   let cards='';
   groups.forEach((g,i)=>{
-    const lines=g.runes.map((r,sl)=>`<div class="slotline"><span>${sl+1} 洞 ${setTag(r)} <span class="muted">${r.m}</span></span><span>速 <b>${r._spd}</b> <span class="muted">ef${r.ef}</span></span></div>`).join('');
-    cards+=`<div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><b>組 ${i+1}</b><span>最終速度 <b style="color:var(--acc)">${finOf(g)}</b>（符文 ${g.total}）</span></div>${lines}</div>`;
+    const lines=g.runes.map((r,sl)=>`<div class="slotline"><span>${sl+1}${t('slotLabel')} ${setTag(r)} <span class="muted">${r.m}</span></span><span>${t('spdShort')} <b>${r._spd}</b> <span class="muted">ef${r.ef}</span></span></div>`).join('');
+    cards+=`<div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><b>${t('setsUnit')} ${i+1}</b><span>${t('finalSpd')} <b style="color:var(--acc)">${finOf(g)}</b> (${t('runesLabelShort')} ${g.total})</span></div>${lines}</div>`;
   });
-  if(!groups.length) cards=`<div class="card muted">此條件下一組都湊不出來。可降低速度門檻、提高假設基礎速，或改用「不限」2洞主屬。</div>`;
+  if(!groups.length) cards=`<div class="card muted">${t('cannotForm')}</div>`;
   $('#capResults').innerHTML=head+bottleneck+cards;
 }
 $('#capRun').onclick=()=>withBusy([$('#capRun')],async()=>{
   const s4=$('#capSet4').value, s2=$('#capSet2').value;
-  if(!s4){ $('#capResults').innerHTML='<div class="card muted">請選擇 4 件套。</div>'; return; }
-  $('#capN4').textContent=s4; $('#capN2').textContent=s2||'（自由洞）';
+  if(!s4){ $('#capResults').innerHTML=`<div class="card muted">${t('pleaseSelect4')}</div>`; return; }
+  $('#capN4').textContent=s4; $('#capN2').textContent=s2||t('freeSlot2');
   const st=$('#capRunStatus');
   const opts={
     s4, s2,
@@ -24194,22 +24933,22 @@ $('#capRun').onclick=()=>withBusy([$('#capRun')],async()=>{
     sparesOnly:$('#capSpares').checked,
     useInt:$('#capUseInt').checked
   };
-  calcStatus(st,'計算中');
+  calcStatus(st,t('calculating'));
   await nextFrame();
   try{
     let res;
     try{
       res=(await fitRunWorker({cmd:'cap',runes:RUNES,opts},null)).result; // worker 背景計算(可取消)
     }catch(err){
-      if(err&&err.canceled){ uxToast('已取消計算','warn'); return; }
-      console.warn('Worker 計算失敗，退回同步模式：',err);
-      res=capSolve(opts);
+    if(err&&err.canceled){ uxToast(t('calcCancelled'),'warn'); return; }
+    console.warn(t('workerFailed'),err);
+    res=capSolve(opts);
     }
     renderCap(res);
   } finally { st.innerHTML=''; }
 });
 $('#capClear').onclick=()=>{
-  $('#capResults').innerHTML='<span class="muted">設定條件後按「計算最多可配組數」</span>';
+  $('#capResults').innerHTML=`<span class="muted">${t('placeholderCap')}</span>`;
 };
 
 // ---------- 帳號質檢卡（仿 SWRT 版型，計分向 SWRT 校正）----------
@@ -24250,7 +24989,7 @@ function qcCard(){
   const TIERS=['legend','g3','g2','g1','c3','c2','c1'];
   const swTier=(v,key)=>{const b=BANDS[key]||[]; for(let i=0;i<b.length;i++){ if(v>=b[i]) return TIERS[i]; } return 'c1';};
   const swStars=t=>{
-    if(t==='legend') return '<span style="font-size:16px;line-height:1" title="傳說">🏅</span>';
+    if(t==='legend') return `<span style="font-size:16px;line-height:1" title="${t('legendTitle')}">🏅</span>`;
     const m={g3:['#ff6a1a',3],g2:['#ff6a1a',2],g1:['#ff6a1a',1],c3:['#e8b923',3],c2:['#e8b923',2],c1:['#e8b923',1]};
     const a=m[t]||['#d0d0d0',0];
     return a[1]? `<span style="color:${a[0]};letter-spacing:1px;font-size:15px">${'★'.repeat(a[1])}</span>` : '<span style="color:#d0d0d0;font-size:15px">☆</span>';
@@ -24262,7 +25001,7 @@ function qcCard(){
   const R=ARTS.filter(a=>a.ty==2).reduce((s,a)=>s+artPts(a),0);
   const artScore=L+R;
   // 各類型符文評分（逐類校正到 SWRT 尺標）：迅速/暴走/絕望/意志/反擊（順序照 SWRT），其餘套裝加總為 Any
-  const NAMED=[['迅速',3,'swift'],['暴走',13,'violent'],['絕望',10,'despair'],['意志',15,'will'],['反擊',17,'revenge']];
+  const NAMED=[['Swift',3,'swift'],['Violent',13,'violent'],['Despair',10,'despair'],['Will',15,'will'],['Revenge',17,'revenge']];
   const namedSids=new Set(NAMED.map(x=>x[1]));
   const catRaw={}; let anyRaw=0;
   runes6.forEach(r=>{const p=catPts(r.ef); if(namedSids.has(r.sid)) catRaw[r.sid]=(catRaw[r.sid]||0)+p; else anyRaw+=p;});
@@ -24283,7 +25022,7 @@ function qcCard(){
       const cnt={}; rids.forEach(id=>{const s=sidById[id]; if(s!=null)cnt[s]=(cnt[s]||0)+1;});
       mons.push({avg:es.reduce((a,b)=>a+b,0)/es.length, cnt});
     });
-    const SET_TARGETS=[['迅速',3],['暴走',13],['絕望',10]];
+    const SET_TARGETS=[['Swift',3],['Violent',13],['Despair',10]];
     rtaRows=SET_TARGETS.map(([nm,sid])=>{
       const avgs=mons.filter(m=>(m.cnt[sid]||0)>=4).map(m=>m.avg).sort((a,b)=>b-a).slice(0,10);
       if(!avgs.length) return null;
@@ -24309,27 +25048,27 @@ function qcCard(){
 
   return `<div class="card" style="grid-column:1/-1;background:#fff;color:#333;border:1px solid #ececf0;border-radius:16px;padding:16px 16px 8px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-      <div style="font-size:18px;font-weight:800;color:#222">賬號健檢</div>
-      ${wiz?`<div style="font-size:13px;font-weight:700;color:#ff6a1a;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="遊戲ID">${wiz}</div>`:''}
-      <div style="font-size:11px;color:#b7bcc4;border:1px solid #e6e6ea;border-radius:10px;padding:1px 8px;margin-left:auto" title="星級＝SWRT 官方門檻（精確）；分數＝向 SWRT 逐類校正的近似值">星級對齊 SWRT</div>
+      <div style="font-size:18px;font-weight:800;color:#222">${t('accountHealth')}</div>
+      ${wiz?`<div style="font-size:13px;font-weight:700;color:#ff6a1a;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t('gameIdTitle')}">${wiz}</div>`:''}
+      <div style="font-size:11px;color:#b7bcc4;border:1px solid #e6e6ea;border-radius:10px;padding:1px 8px;margin-left:auto" title="${t('starSwrtTitle')}">${t('starsSWRT')}</div>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:16px">
-      ${tile('Json 檔案日期',jd)}
-      ${tile('符文評分',fmt(runeScore))}
-      ${tile('魔礦評分',fmt(artScore))}
+      ${tile(t('jsonDate'),jd)}
+      ${tile(t('runeScore'),fmt(runeScore))}
+      ${tile(t('artScore'),fmt(artScore))}
     </div>
     <div style="margin-bottom:16px">
-      ${secTitle('魔礦評級',artScore,'allArt')}
-      ${row('屬性魔礦',L,'left')}
-      ${row('類型魔礦',R,'right')}
+      ${secTitle(t('artGrade'),artScore,'allArt')}
+      ${row(t('elemArt'),L,'left')}
+      ${row(t('typeArt'),R,'right')}
     </div>
     <div>
-      ${secTitle('符文評級',runeScore,'allScore')}
-      ${rtaRows.length?groupTitle('Top10魔靈均分')+rtaRows.map(r=>row(r.nm,r.v,'rune','%')).join(''):''}
-      ${groupTitle('各類型符文評分')+typeRows.map(r=>row(r.nm,r.score,r.bk)).join('')}
+      ${secTitle(t('runeGrade'),runeScore,'allScore')}
+      ${rtaRows.length?groupTitle(t('top10Avg'))+rtaRows.map(r=>row(r.nm,r.v,'rune','%')).join(''):''}
+      ${groupTitle(t('runeScoresByType'))+typeRows.map(r=>row(r.nm,r.score,r.bk)).join('')}
     </div>
     <div style="font-size:11px;color:#b7bcc4;margin-top:12px;line-height:1.5">
-      <b>星級</b>＝SWRT 官方 7 階門檻（legend／金3金2金1／銅3銅2銅1），已用真實截圖逐格驗證、精確一致。<b>分數</b>＝向 SWRT 逐類真值校正的近似值（6 帳號重擬合）：逐類符文各自係數×Σmax(0,效率−98)^1.4、Top10 效率線性轉 SWRT 尺標、魔礦＝Σmax(0,Σroll²−8)^1.5、魔礦評分＝屬性＋類型。SWRT 原分為伺服器私有公式無法精確複製；6 帳號星級命中率約 85%（未中者多為相鄰一階，且多屬「少而精 vs 多而庸」的排序反轉——SWRT 獎勵精英集中、與全庫效率加總天生對不齊，無法靠係數消除）。
+      ${t('qcFootnote')}
     </div>
   </div>`;
 }
@@ -24343,16 +25082,16 @@ function ov(){
      <div style="flex:1;background:#20263f;border-radius:4px;overflow:hidden"><div style="width:${v/mx*100}%;background:${color};height:14px"></div></div>
      <span style="width:40px;text-align:right">${v}</span></div>`).join('');};
   const cards=[];
-  cards.push(`<div class="card"><h3>怪物屬性分佈</h3>${bar(by(UNITS,u=>u.at),'#6ea8ff')}</div>`);
-  cards.push(`<div class="card"><h3>6★怪物職業</h3>${bar(by(UNITS.filter(u=>u.s==6),u=>u.ar),'#37d67a')}</div>`);
-  cards.push(`<div class="card"><h3>符文套裝分佈(6★)</h3>${bar(by(r6,r=>r.set||'?'),'#ffb020')}</div>`);
-  cards.push(`<div class="card"><h3>符文效率分級(6★)</h3>${bar({'110%+':r6.filter(r=>r.ef>=110).length,'100-110':r6.filter(r=>r.ef>=100&&r.ef<110).length,'90-100':r6.filter(r=>r.ef>=90&&r.ef<100).length,'80-90':r6.filter(r=>r.ef>=80&&r.ef<90).length,'<80':r6.filter(r=>r.ef<80).length},'#ff6b4a')}</div>`);
+  cards.push(`<div class="card"><h3>${t('monsterElement')}</h3>${bar(by(UNITS,u=>u.at),'#6ea8ff')}</div>`);
+  cards.push(`<div class="card"><h3>${t('monsterClass')}</h3>${bar(by(UNITS.filter(u=>u.s==6),u=>u.ar),'#37d67a')}</div>`);
+  cards.push(`<div class="card"><h3>${t('runeSetDist')}</h3>${bar(by(r6,r=>r.set||'?'),'#ffb020')}</div>`);
+  cards.push(`<div class="card"><h3>${t('runeEffGrade')}</h3>${bar({'110%+':r6.filter(r=>r.ef>=110).length,'100-110':r6.filter(r=>r.ef>=100&&r.ef<110).length,'90-100':r6.filter(r=>r.ef>=90&&r.ef<100).length,'80-90':r6.filter(r=>r.ef>=80&&r.ef<90).length,'<80':r6.filter(r=>r.ef<80).length},'#ff6b4a')}</div>`);
   const spd=RUNES.filter(r=>r.mt==8);
-  cards.push(`<div class="card"><h3>關鍵指標</h3>
-    <div class="kv"><div><span>速度主符(2洞SPD)</span><b>${spd.length}</b></div>
-    <div><span>其中倉庫可用</span><b>${spd.filter(r=>r.eq==0).length}</b></div>
-    <div><span>上古符文</span><b>${RUNES.filter(r=>r.anc==1).length}</b></div>
-    <div><span>110%+神符</span><b>${RUNES.filter(r=>r.ef>=110).length}</b></div></div></div>`);
+  cards.push(`<div class="card"><h3>${t('keyMetrics')}</h3>
+    <div class="kv"><div><span>${t('spdMainRunes')}</span><b>${spd.length}</b></div>
+    <div><span>${t('inStorage')}</span><b>${spd.filter(r=>r.eq==0).length}</b></div>
+    <div><span>${t('ancientRunes')}</span><b>${RUNES.filter(r=>r.anc==1).length}</b></div>
+    <div><span>${t('godRunes')}</span><b>${RUNES.filter(r=>r.ef>=110).length}</b></div></div></div>`);
   const _qc=qcCard(); if(_qc) cards.unshift(_qc);
   $('#ovGrid').innerHTML=cards.join('');
 }
